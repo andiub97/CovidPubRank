@@ -6,3 +6,6 @@ lazy val root = (project in file("."))
   .settings(
     name := "CovidPubRank"
   )
+
+libraryDependencies += "org.apache.spark" %% "spark-core" % "2.4.5"
+libraryDependencies += "org.scalatra.scalate" %% "scalate-core" % "1.9.5"
