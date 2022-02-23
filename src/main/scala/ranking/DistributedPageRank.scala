@@ -11,7 +11,7 @@ import scala.math.abs
  *  @param tolerance PageRank algorithm convergence parameter [default 0f].
  *                   With default value PageRank is run for a fixed number of iterations.
  */
-class PageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
+class DistributedPageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
     type T = RDD[(Int, Int)]
     var context: SparkContext = null;
 
