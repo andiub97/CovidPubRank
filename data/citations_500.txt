@@ -1,0 +1,61 @@
+n 0 Clinical Characteristics of Patients with Severe Pneumonia Caused by the 2019 Novel Coronavirus in Wuhan, China Title: The clinical characteristics of 2019 novel coronavirus severe pneumonia *Corresponding Author
+n 1 Isolation of a novel coronavirus from a man with pneumonia in Saudi Arabia
+n 2 China through a drug-target interaction deep learning model
+n 3 Early, low-dose and short-term application of corticosteroid treatment in patients with severe COVID-19 pneumonia: single-center experience from Wuhan, China
+n 4 Host and infectivity prediction of Wuhan 2019 novel coronavirus using deep learning algorithm
+n 5 Neutrophil-to-Lymphocyte Ratio Predicts Severe Illness Patients with 2019 Novel Coronavirus in the Early Stage
+n 6 MERS-CoV spillover at the camel-human interface
+n 7 Identification of a super-spreading chain of transmission associated with COVID-19
+n 8 Vulnerabilities in coronavirus glycan shields despite extensive glycosylation
+n 9 Clinical Characteristics of Two Human to Human Transmitted Coronaviruses: Corona Virus Disease 2019 versus Middle East Respiratory Syndrome Coronavirus
+n 10 Alpha-ketoamides as broad-spectrum inhibitors of coronavirus and enterovirus replication Structure-based design, synthesis, and activity assessment
+n 11 Awareness of MERS-CoV among Staff Members of Prince Sultan Military Medical City in Riyadh, Saudi Arabia
+n 12 Gender differences in patients with COVID-19: Focus on severity and mortality
+n 13 Evolution and variation of 2019-novel coronavirus
+n 14 SARS-CoV-2, an evolutionary perspective of interaction with human ACE2 reveals undiscovered amino acids necessary for complex stability
+n 15 Potential Factors for Prediction of Disease Severity of COVID-19 Patients
+n 16 Teicoplanin potently blocks the cell entry of 2019-nCoV
+n 17 Bat-man disease transmission: zoonotic pathogens from wildlife reservoirs to human populations
+n 18 A Novel Nanobody Targeting Middle East Respiratory Syndrome Coronavirus (MERS-CoV) Receptor-Binding Domain Has Potent Cross-Neutralizing Activity and Protective Efficacy against MERS-CoV VACCINES AND ANTIVIRAL AGENTS crossm
+n 19 Host Determinants of MERS-CoV Transmission and Pathogenesis
+n 20 Comparison of incubation period distribution of human infections with MERS-CoV in South Korea and Saudi Arabia
+n 21 Tissue tropism and transmission ecology predict virulence of human RNA viruses
+n 22 Adaptive evolution of bat dipeptidyl peptidase 4 (dpp4): implications for the origin and emergence of Middle East respiratory syndrome coronavirus
+n 23 Epitope-Based Vaccine Target Screening against Highly Pathogenic MERS-CoV: An In Silico Approach Applied to Emerging Infectious Diseases
+n 24 Increasing the translation of mouse models of MERS coronavirus pathogenesis through kinetic hematological analysis
+n 25 Knowledge and attitude of healthcare workers about middle east respiratory syndrome in multispecialty hospitals of Qassim, Saudi Arabia
+n 26 Molecular epidemiology and characterization of human coronavirus
+n 27 Perception and Attitude of Emergency Room Resident Physicians toward Middle East Respiratory Syndrome Outbreak
+n 28 MERS coronavirus: diagnostics, epidemiology and transmission
+n 29 Coronaviruses: emerging and re-emerging pathogens in humans and animals
+n 30 Replication of MERS and SARS coronaviruses in bat cells offers insights to their ancestral origins
+e 0 1
+e 2 1
+e 3 1
+e 4 1
+e 5 1
+e 6 1
+e 7 1
+e 8 1
+e 9 1
+e 10 1
+e 11 1
+e 12 1
+e 13 1
+e 14 1
+e 15 1
+e 16 1
+e 17 1
+e 18 1
+e 19 1
+e 20 1
+e 21 1
+e 22 1
+e 23 1
+e 24 1
+e 25 1
+e 26 1
+e 27 1
+e 28 1
+e 29 1
+e 30 1
