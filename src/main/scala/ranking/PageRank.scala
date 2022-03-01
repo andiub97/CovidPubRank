@@ -1,20 +1,13 @@
 package ranking
 
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
+import ranking.RankingAlgorithm
 
-/** PageRank algorithm.
- *
- *  @param tolerance PageRank algorithm convergence parameter [default 0f].
- *                   With default value PageRank is run for a fixed number of iterations.
- */
+import scala.collection.immutable.Map
+import scala.math.abs
+
 class PageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
-    type T = RDD[(Int, Int)]
-    var context: SparkContext = null;
+    type T = List[(Int, Int)]
 
-    def setContext(sc: SparkContext) = {
-        this.context = sc
-    }
     /**
      * Performs ranking of a graph's nodes by using PageRank algorithm
      *
@@ -22,37 +15,54 @@ class PageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
      * @param N number of nodes in the graph
      **/
     override def rank(edgesList: T, N: Int): List[(Int, Float)] = {
-        /*
-        Get an of outgoing nodes counts for each node (map index is nodeId).
-        NOTE: There will never be a node with zero outgoing nodes, during calculation of PageRank.
-              This is because when we consider an incoming node B for a node A, B must have at least the link to A.
-         */
+      /*
+      Get an of outgoing nodes counts for each node (map index is nodeId).
+      NOTE: There will never be a node with zero outgoing nodes, during calculation of PageRank.
+            This is because when we consider an incoming node B for a node A, B must have at least the link to A.
+       */
+      val outgoingCnt: Map[Int, Int] = edgesList.map(edge => (edge._1, 1)).groupBy(_._1).mapValues(_.map(_._2).sum)
+      var pr: Map[Int, Float] = (0 until N).map(nodeIndex => (nodeIndex, 1f / N)).toMap
 
+      val maxIter: Int = 10
+      val damping: Float = 0.85f
 
-        val outgoingCnt: RDD[(Int, Iterable[Int])] = edgesList.groupByKey().persist()
-       /*val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.map(edge => (edge._2, edge._1)).groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
-        val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)).toList)
-        val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
-        val outgoingCnt = outEdgesTmp.union(mockOutEdges)*/
-        var pr: RDD[(Int, Float)] = outgoingCnt.mapValues(v => 1.0f).persist()
+      // Runs PageRank until convergence.
+      if (tolerance > 0f) {
+        var oldPr: Map[Int, Float] = (0 until N).map(nodeIndex => (nodeIndex, 0f)).toMap
+        var maxDiff: Float = 10f
 
+        do {
+          oldPr = pr
+          pr = pr.map { case (nodeId: Int, nodePr: Float) =>
+            (nodeId, (1 - damping) / N + damping *
+              edgesList.filter { case (incoming: Int, dest: Int) => dest == nodeId }
+                .map { case (incoming: Int, dest: Int) => pr(incoming) / outgoingCnt(incoming) }.sum
+            )
+          }
 
-        val maxIter: Int = 10
-        val damping: Float = 0.85f
+          maxDiff = pr.map { case (nodeId: Int, nodePr: Float) =>
+            (nodeId, abs(nodePr - oldPr(nodeId)))
+          }.maxBy(_._2)._2
 
-        //Runs PageRank for a fixed number of iterations.
-            for (t <- 1 to maxIter) {
+        } while (maxDiff > tolerance)
 
-                val contributions = outgoingCnt.join(pr).flatMap{
-                    case (u, (uLinks, urank)) =>
-                        uLinks.map( t => (t, urank/ uLinks.size))
-                }
+      }
 
-                pr = contributions.reduceByKey((x, y) => x + y).mapValues(v => 0.15f + 0.85f*v)
+      //Runs PageRank for a fixed number of iterations.
+      else {
+        for (t <- 1 to maxIter) {
+          // pr => (nodeId, pr(nodeId))
+          pr = pr.map { case (nodeId: Int, nodePr: Float) =>
+            (nodeId, (1 - damping) / N + damping *
+              edgesList.filter { case (incoming: Int, dest: Int) => dest == nodeId }
+                .map { case (incoming: Int, dest: Int) => pr(incoming) / outgoingCnt(incoming) }.sum
+            )
+          }
         }
+      }
 
-        // sort in descending order by PageRank value
-        pr.sortBy(- _._2).collect().toList
+      // sort in descending order by PageRank value
+      pr.toList.sortBy(- _._2)
     }
 
 }
