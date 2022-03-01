@@ -19,8 +19,9 @@ object VisualizationUtils {
     def printTopK(rank: List[(Int, Float)], nodes: Map[Int, String], k: Int = 10)  = {
         val limit = k.min(rank.length)
 
-        for (i <- 0 until limit) {
+        for (i <- 0 until limit ) {
           println(nodes(rank(i)._1), rank(i)._1, rank(i)._2)
+
         }
     }
 
