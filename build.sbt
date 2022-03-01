@@ -8,4 +8,5 @@ lazy val root = (project in file("."))
   )
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % "2.4.5"
+libraryDependencies += "org.apache.spark" %% "spark-graphx" % "3.1.2"
 libraryDependencies += "org.scalatra.scalate" %% "scalate-core" % "1.9.5"
