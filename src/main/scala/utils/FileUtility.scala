@@ -1,6 +1,8 @@
 package utils
 
-object FileUtils {
+import org.apache.spark.rdd.RDD
+
+object FileUtility {
 
     /**
      * Loads a graph's list of edges from a given file path.
@@ -11,7 +13,7 @@ object FileUtils {
           .filter(line => line.startsWith("e"))
           .map(line => line.split("\\s"))
           .map(tokens => (tokens(1).toInt, tokens(2).toInt))
-          .collect.toList
+          .collect().toList
         edgesList
     }
 
