@@ -1,7 +1,8 @@
 package ranking
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{HashPartitioner, SparkContext}
 import org.apache.spark.rdd.RDD
+import utils.SparkContextSingleton
 
 import scala.collection.immutable.Map
 import scala.math.abs
@@ -11,9 +12,9 @@ import scala.math.abs
  *  @param tolerance PageRank algorithm convergence parameter [default 0f].
  *                   With default value PageRank is run for a fixed number of iterations.
  */
-class DistributedPageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
+class DistributedPageRank() extends RankingAlgorithm {
     type T = RDD[(Int, Int)]
-    var context: SparkContext = null;
+    var context: SparkContext = SparkContextSingleton.getContext();
 
     def setContext(sc: SparkContext) = {
         this.context = sc
@@ -32,30 +33,30 @@ class DistributedPageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
          */
 
 
-        //val outgoingCnt: RDD[(Int, Iterable[Int])] = edgesList.groupByKey().persist()
-        val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.map(edge => (edge._2, edge._1)).groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
+        val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.groupBy(edge => edge._1).mapValues(_.map(_._2)).persist()
         val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)).toList)
         val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
-        val outgoingCnt = outEdgesTmp.union(mockOutEdges)
-        var pr: RDD[(Int, Float)] = outgoingCnt.mapValues(v => 1.0f).persist()
+        val links = outEdgesTmp.union(mockOutEdges)
 
+        var ranks: RDD[(Int, Float)] = links.mapValues(v => 1f / N).persist()
 
         val maxIter: Int = 10
-        val damping: Float = 0.85f
 
         //Runs PageRank for a fixed number of iterations.
-            for (t <- 1 to maxIter) {
+        for (i <- 1 to maxIter) {
 
-                val contributions = outgoingCnt.join(pr).flatMap{
-                    case (u, (uLinks, urank)) =>
-                        uLinks.map( t => (t, urank/ uLinks.size))
-                }
+            val contributions = links.join(ranks).flatMap {
+                case (u, (uLinks: List[Int], urank)) =>
+                    uLinks.map(t =>
+                        if (t == u) (t, 0f)
+                        else (t, urank / uLinks.size))
 
-                pr = contributions.reduceByKey((x, y) => x + y).mapValues(v => 0.15f + 0.85f*v)
+            }
+            ranks = contributions.reduceByKey((x, y) => x + y).mapValues(v => (0.15f / N) + 0.85f * v)
         }
 
         // sort in descending order by PageRank value
-        pr.sortBy(- _._2).collect().toList
+        ranks.sortBy(-_._2).collect().toList
     }
 
 }
