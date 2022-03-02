@@ -1,22 +1,14 @@
 package ranking
 
-import org.apache.spark.{HashPartitioner, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import utils.SparkContextSingleton
 
-import scala.collection.immutable.Map
-import scala.math.abs
-
-/** PageRank algorithm.
- *
- *  @param tolerance PageRank algorithm convergence parameter [default 0f].
- *                   With default value PageRank is run for a fixed number of iterations.
- */
 class DistributedPageRank() extends RankingAlgorithm {
     type T = RDD[(Int, Int)]
-    var context: SparkContext = SparkContextSingleton.getContext();
+    var context: SparkContext = SparkContextSingleton.getContext()
 
-    def setContext(sc: SparkContext) = {
+    def setContext(sc: SparkContext): Unit = {
         this.context = sc
     }
     /**
@@ -32,26 +24,26 @@ class DistributedPageRank() extends RankingAlgorithm {
               This is because when we consider an incoming node B for a node A, B must have at least the link to A.
          */
 
+        val links = this.context.parallelize(edgesList.groupBy(e => e._1).mapValues(_.map(_._2)).collect().toList
+                        .union((0 until N).map(n => (n, List(n)))))
 
-        val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.groupBy(edge => edge._1).mapValues(_.map(_._2)).persist()
-        val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)).toList)
-        val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
-        val links = outEdgesTmp.union(mockOutEdges)
-
-        var ranks: RDD[(Int, Float)] = links.mapValues(v => 1f / N).persist()
+        var ranks: RDD[(Int, Float)] = links.mapValues(_ => 1f / N)
 
         val maxIter: Int = 10
 
+
         //Runs PageRank for a fixed number of iterations.
-        for (i <- 1 to maxIter) {
+        for (_ <- 1 to maxIter) {
+
 
             val contributions = links.join(ranks).flatMap {
-                case (u, (uLinks: List[Int], urank)) =>
+                case (u, (uLinks:Iterable[Int], urank)) =>
                     uLinks.map(t =>
                         if (t == u) (t, 0f)
                         else (t, urank / uLinks.size))
 
             }
+
             ranks = contributions.reduceByKey((x, y) => x + y).mapValues(v => (0.15f / N) + 0.85f * v)
         }
 
