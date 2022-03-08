@@ -23,11 +23,9 @@ class DistributedPageRank() extends RankingAlgorithm {
         NOTE: There will never be a node with zero outgoing nodes, during calculation of PageRank.
               This is because when we consider an incoming node B for a node A, B must have at least the link to A.
          */
+        val links = edgesList.groupBy(e => e._1).mapValues(_.map(_._2))
 
-        val links = this.context.parallelize(edgesList.groupBy(e => e._1).mapValues(_.map(_._2)).collect().toList
-                        .union((0 until N).map(n => (n, List(n)))))
-
-        var ranks: RDD[(Int, Float)] = links.mapValues(_ => 1f / N)
+        var ranks: RDD[(Int, Float)] = context.parallelize((0 until N).map(n => (n, 0.15f / N)))
 
         val maxIter: Int = 10
 
@@ -39,12 +37,14 @@ class DistributedPageRank() extends RankingAlgorithm {
             val contributions = links.join(ranks).flatMap {
                 case (u, (uLinks:Iterable[Int], urank)) =>
                     uLinks.map(t =>
-                        if (t == u) (t, 0f)
-                        else (t, urank / uLinks.size))
+                        (t, urank / uLinks.size))
 
             }
 
-            ranks = contributions.reduceByKey((x, y) => x + y).mapValues(v => (0.15f / N) + 0.85f * v)
+            ranks = ranks.leftOuterJoin(contributions.reduceByKey((x, y) => x + y).mapValues(v => (0.15f / N) + 0.85f * v)).map(r => (r._1, r._2._2 match {
+                case Some(value) => value
+                case None => r._2._1
+            }))
         }
 
         // sort in descending order by PageRank value
