@@ -1,11 +1,8 @@
 package ranking
 
-import ranking.RankingAlgorithm
-
 import scala.collection.immutable.Map
-import scala.math.abs
 
-class PageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
+class PageRank(val tolerance: Float) extends RankingAlgorithm {
     type T = List[(Int, Int)]
 
     /**
@@ -21,13 +18,13 @@ class PageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
             This is because when we consider an incoming node B for a node A, B must have at least the link to A.
        */
       val outgoingCnt: Map[Int, Int] = edgesList.map(edge => (edge._1, 1)).groupBy(_._1).mapValues(_.map(_._2).sum)
-      var pr: Map[Int, Float] = (0 until N).map(nodeIndex => (nodeIndex, 1f / N)).toMap
+      var pr: Map[Int, Float] = (0 until N).map(nodeIndex => (nodeIndex, 0.15f / N)).toMap
 
       val maxIter: Int = 10
       val damping: Float = 0.85f
 
       // Runs PageRank until convergence.
-      if (tolerance > 0f) {
+      /*if (tolerance > 0f) {
         var oldPr: Map[Int, Float] = (0 until N).map(nodeIndex => (nodeIndex, 0f)).toMap
         var maxDiff: Float = 10f
 
@@ -49,7 +46,7 @@ class PageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
       }
 
       //Runs PageRank for a fixed number of iterations.
-      else {
+      else {*/
         for (t <- 1 to maxIter) {
           // pr => (nodeId, pr(nodeId))
           pr = pr.map { case (nodeId: Int, nodePr: Float) =>
@@ -58,8 +55,9 @@ class PageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
                 .map { case (incoming: Int, dest: Int) => pr(incoming) / outgoingCnt(incoming) }.sum
             )
           }
-        }
+        //}
       }
+
 
       // sort in descending order by PageRank value
       pr.toList.sortBy(- _._2)
