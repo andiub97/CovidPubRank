@@ -38,7 +38,6 @@ class DistributedPageRank() extends RankingAlgorithm {
                 case (u, (uLinks:Iterable[Int], urank)) =>
                     uLinks.map(t =>
                         (t, urank / uLinks.size))
-
             }
 
             ranks = ranks.leftOuterJoin(contributions.reduceByKey((x, y) => x + y).mapValues(v => (0.15f / N) + 0.85f * v)).map(r => (r._1, r._2._2 match {
