@@ -1,10 +1,7 @@
 package ranking
 
 import org.apache.spark.SparkContext
-import org.apache.spark.graphx.{Edge, Graph, VertexId}
-import org.apache.spark.graphx.lib.PageRank
-import org.apache.spark.rdd.RDD
-import utils.FileUtility
+import org.apache.spark.graphx.Graph
 
 
 class PageRankLibrary extends RankingAlgorithm {
@@ -20,12 +17,10 @@ class PageRankLibrary extends RankingAlgorithm {
    * @param edgesList list of graph's edges
    * @param N         number of nodes in the graph
    * */
-   override def rank(graph: T, N: Int): List[(Int, Float)] = {
+   override def rank(graph: T, N: Int)={
 
-    val graphRank = graph.pageRank(0.000000001f, 0.15)
-    val pr= graphRank.vertices.map(v => (v._1.toInt, v._2.toFloat)).collect().toList
+     val pagerank = graph.pageRank(0.000000001f, 0.15)
+     val pr= pagerank.vertices.map(v => (v._1.toInt, v._2.toFloat)).collect().toList
      pr.toList.sortBy(- _._2)
-
-     //graphRank.edges.map(e => ( e.attr.toFloat)).collect().toList
-  }
+   }
 }
