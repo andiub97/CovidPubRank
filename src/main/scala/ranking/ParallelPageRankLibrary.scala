@@ -1,21 +1,15 @@
 package ranking
 
-import org.apache.spark.SparkContext
 import org.apache.spark.graphx.{EdgeTriplet, Graph, Pregel, VertexId}
+import ranking.algorithmTraits.{AlgorithmInterface, LibraryAlgorithms}
 
-class ParallelPageRankLibrary extends RankingAlgorithm {
-  override type T = Graph[(Int, String), String]
-  var context: SparkContext = null
+class ParallelPageRankLibrary extends AlgorithmInterface with LibraryAlgorithms {
 
-
-  def setContext(sc: SparkContext) = {
-    this.context = sc
-  }
   /**
    * Performs ranking of a graph's nodes via some policy
    *
-   * @param edgesList list of graph's edges
-   * @param N         number of nodes in the graph
+   * @param graph   graph nodes and edges
+   * @param N       number of nodes in the graph
    * */
   override def rank(graph: T, N: Int): List[(Int, Float)] = {
 
@@ -23,12 +17,12 @@ class ParallelPageRankLibrary extends RankingAlgorithm {
     val pagerankGraph: Graph[Double, Double] = graph
       // Associate the degree with each vertex
       .outerJoinVertices(graph.outDegrees) {
-        (vid, vdata, deg) => deg.getOrElse(0)
+        (_, _, deg) => deg.getOrElse(0)
       }
       // Set the weight on the edges based on the degree
       .mapTriplets(e => 1.0 / e.srcAttr)
       // Set the vertex attributes to the initial pagerank values
-      .mapVertices((id, attr) => 0.15)
+      .mapVertices((id, _) => 0.15)
 
     def vertexProgram(id: VertexId, attr: Double, msgSum: Double): Double = {
       resetProb/N + (1.0 - resetProb) * msgSum
