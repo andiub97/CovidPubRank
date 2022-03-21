@@ -1,85 +1,81 @@
 import org.apache.spark.graphx.{Edge, Graph}
-import ranking.{DistributedPageRank, PageRank, PageRankLibrary, ParallelPageRankLibrary, RankingAlgorithm}
+import org.apache.spark.rdd.RDD
+import ranking._
+import ranking.algorithmTraits.{AlgorithmInterface, LibraryAlgorithms, NotLibraryAlgorithms}
 import utils.{FileUtility, SparkContextSingleton, VisualizationUtils}
-
 
 object Main {
 
-    def performRanking(graphFilePath: String, edgesList: List[(Int, Int)], N: Int, algorithm: RankingAlgorithm): List[(Int, Float)] = {
+
+    def performRanking(graphFilePath: String, edgesList: RDD[(Int, Int)], N: Int, algorithm: AlgorithmInterface): (String, (List[(Int, Float)], Double)) = {
+        val sc = SparkContextSingleton.getContext
+        algorithm.setContext(sc)
         algorithm match {
-            case r: PageRank => r.rank(edgesList, N)
-            case r: DistributedPageRank =>
-                val sc = SparkContextSingleton.getContext
-                val distEdgesList = sc.parallelize(edgesList)
-                r.setContext(sc)
-                r.rank(distEdgesList, N)
-            case r: PageRankLibrary =>
-                val sc = SparkContextSingleton.getContext
-                r.setContext(sc)
+            case r @ ( _: PageRank | _: DistributedPageRank ) =>
 
+                val start_time = System.nanoTime
+                val ranking = r.asInstanceOf[NotLibraryAlgorithms].rank(edgesList: RDD[(Int,Int)],N)
+                val duration = (System.nanoTime - start_time) / 1e9d
+                r.getClass.getName -> (ranking, duration)
+
+            case r @ (_ : PageRankLibrary | _ : ParallelPageRankLibrary ) =>
+                // get nodes from file
                 val nodes = FileUtility.loadNodesFromFile(graphFilePath).toSeq
-                val vertexMap = (0 until nodes.size).map(i => nodes(i) -> nodes(i)._1.toLong).toMap
-                //vertexMap.foreach(m => (println(m._1), println(m._2)))
-                val edgeList = FileUtility.loadGraphFromFile(graphFilePath).map(x => Edge((x._1),(x._2),"")).toSeq
-
-                val distEdgesList = sc.parallelize(edgeList.toSeq)
+                val vertexMap = nodes.indices.map(i => nodes(i) -> nodes(i)._1.toLong).toMap
                 val distNodes = sc.parallelize(vertexMap.toSeq.map(_.swap))
 
-                val graph = Graph(distNodes,distEdgesList)
-                r.rank(graph, N)
-            case r: ParallelPageRankLibrary =>
-                val sc = SparkContextSingleton.getContext
-                r.setContext(sc)
+                //graphs' edges
+                val edgeList = FileUtility.loadGraphFromFile(graphFilePath).map(x => Edge(x._1, x._2,""))
 
-                val nodes = FileUtility.loadNodesFromFile(graphFilePath).toSeq
-                val vertexMap = (0 until nodes.size).map(i => nodes(i) -> nodes(i)._1.toLong).toMap
-                //vertexMap.foreach(m => (println(m._1), println(m._2)))
-                val edgeList = FileUtility.loadGraphFromFile(graphFilePath).map(x => Edge((x._1),(x._2),"")).toSeq
+                val graph = Graph(distNodes,edgeList)
 
-                val distEdgesList = sc.parallelize(edgeList.toSeq)
-                val distNodes = sc.parallelize(vertexMap.toSeq.map(_.swap))
+                val start_time = System.nanoTime
+                val ranking = r.asInstanceOf[LibraryAlgorithms].rank(graph, N)
+                val duration = (System.nanoTime - start_time) / 1e9d
+                r.getClass.getName -> (ranking, duration)
 
-                val graph = Graph(distNodes,distEdgesList)
-                r.rank(graph, N)
         }
     }
 
     def main(args: Array[String]): Unit = {
         // Parse program arguments
-        val graphFilePath = "data/citations_500.txt"
-        val algorithmName = if (args.length > 1) args(1) else "ParallelPageRankLibrary"
-        // PageRank tolerance
-        val prTolerance: Float = 0.000000001f
-        // Output parameters
+        val algorithmName = if (args.length > 0) args(0) else "DistributedPageRank"
+        val graphFilePath = if (args.length > 1) args(1) else "data/citations_500.txt"
+        val outputFilePath = if (args.length > 2) args(2) else "src/main/scala/output"
+        // Chart size
         val topK: Int = 3
-        //val outputFilename: String = "result_%s.html".format(algorithmName)
         // Pick the ranking algorithm
-        val r : RankingAlgorithm =
+        val r : List[AlgorithmInterface] =
             algorithmName match {
-                case "DistributedPageRank" => new DistributedPageRank()
-                case "PageRank" => new PageRank(tolerance = prTolerance)
-                case "PageRankLibrary" => new PageRankLibrary()
-                case "ParallelPageRankLibrary" => new ParallelPageRankLibrary()
-                }
+                case "DistributedPageRank" => List( new DistributedPageRank())
+                case "PageRank" => List( new PageRank())
+                case "PageRankLibrary" => List(new PageRankLibrary())
+                case "ParallelPageRankLibrary" => List(new ParallelPageRankLibrary())
+                case "AllRankingAlgorithms" => List( new DistributedPageRank(), new PageRank(), new PageRankLibrary(), new ParallelPageRankLibrary())
+            }
 
         // Report algorithm
-        println("Using algorithm "+algorithmName);
-        // Load data
-        println("Loading graph from "+graphFilePath);
+        println("Using algorithm "+algorithmName)
+        println("Loading graph from "+graphFilePath)
         val edgesList = FileUtility.loadGraphFromFile(graphFilePath)
         val nodes = FileUtility.loadNodesFromFile(graphFilePath)
         val N: Int = nodes.size
         // Display graph data
         println("Loaded "+N+" nodes.")
-        println("Loaded "+edgesList.size+" edges.")
+        println("Loaded "+edgesList.count() +" edges.")
         // Perform ranking
-        val t1 = System.nanoTime
-        val ranking = performRanking(graphFilePath, edgesList, N, r)
-        val duration = (System.nanoTime - t1) / 1e9d
-        println(duration)
-        // Print all the results
-        VisualizationUtils.printTopK(ranking, nodes, k = topK)
+        var ranking: Map[String, (List[(Int, Float)], Double)] = null
+        for (elem <- r) {
+            println(elem.getClass.getName)
 
+        }
+        ranking = r.map(a => performRanking(graphFilePath, edgesList, N, a)).toMap
+        // Print all the results
+        ranking.map( r => (println(r._1),println(r._2._2), VisualizationUtils.printTopK(r._2._1, nodes, k = topK)))
+        // Get execution time for each ranking algorithm
+        val exec_times = ranking.map(r => (r._1, r._2._2))
+        // Export results to txt file
+        FileUtility.exportToTxt(outputFilePath, exec_times)
     }
 
 
