@@ -1,53 +1,48 @@
 package ranking
 
-import org.apache.spark.SparkContext
+import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
-import utils.SparkContextSingleton
+import ranking.algorithmTraits.{AlgorithmInterface, NotLibraryAlgorithms}
 
-class DistributedPageRank() extends RankingAlgorithm {
-    type T = RDD[(Int, Int)]
-    var context: SparkContext = SparkContextSingleton.getContext()
+class DistributedPageRank() extends AlgorithmInterface with NotLibraryAlgorithms {
 
-    def setContext(sc: SparkContext): Unit = {
-        this.context = sc
-    }
+
     /**
      * Performs ranking of a graph's nodes by using PageRank algorithm
      *
      * @param edgesList list of graph's edges
      * @param N number of nodes in the graph
      **/
+
     override def rank(edgesList: T, N: Int): List[(Int, Float)] = {
-        /*
-        Get an of outgoing nodes counts for each node (map index is nodeId).
-        NOTE: There will never be a node with zero outgoing nodes, during calculation of PageRank.
-              This is because when we consider an incoming node B for a node A, B must have at least the link to A.
-         */
-        val links = edgesList.groupBy(e => e._1).mapValues(_.map(_._2))
+        val damping : Float = 0.85f
 
-        var ranks: RDD[(Int, Float)] = context.parallelize((0 until N).map(n => (n, 0.15f / N)))
+        /*val outEdgesTmp: RDD[(Int, Iterable[Int])] = this.context.parallelize(edgesList).map(edge => (edge._2, edge._1)).groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
+        val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)).toList)
+        val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
+        val outEdges = outEdgesTmp.union(mockOutEdges).partitionBy(new HashPartitioner(16))*/
+        val outEdges = edgesList.groupBy(e => e._1).mapValues(_.map(_._2)).partitionBy(new HashPartitioner(16))
 
-        val maxIter: Int = 10
+        var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new HashPartitioner(16))
 
+        // Runs PageRank until convergence.
 
-        //Runs PageRank for a fixed number of iterations.
-        for (_ <- 1 to maxIter) {
+        for (_ <- 1 to 10) {
+            val nodeSuccessorsScores = outEdges.join(pageRank)
+              .flatMap {
+                  case (_: Int, (nodeSuccessors: List[Int], rank: Float)) =>
+                      val outDegree = nodeSuccessors.size
+                      nodeSuccessors.map {
+                          nodeSuccessor: Int =>
+                              (nodeSuccessor, rank / outDegree)
+                      }
+              }.partitionBy(new HashPartitioner(16))
 
-
-            val contributions = links.join(ranks).flatMap {
-                case (u, (uLinks:Iterable[Int], urank)) =>
-                    uLinks.map(t =>
-                        (t, urank / uLinks.size))
-            }
-
-            ranks = ranks.leftOuterJoin(contributions.reduceByKey((x, y) => x + y).mapValues(v => (0.15f / N) + 0.85f * v)).map(r => (r._1, r._2._2 match {
-                case Some(value) => value
-                case None => r._2._1
-            }))
+            pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
+              .mapValues(score => (1 - damping) / N + damping * score)
         }
 
-        // sort in descending order by PageRank value
-        ranks.sortBy(-_._2).collect().toList
+        pageRank.sortBy(- _._2).collect().toList
     }
 
 }
