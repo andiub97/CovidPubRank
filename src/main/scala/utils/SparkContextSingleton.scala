@@ -3,11 +3,11 @@ package utils
 import org.apache.spark.{SparkConf, SparkContext}
 
 object SparkContextSingleton {
-    private var context: SparkContext = null
+    private var context: SparkContext = _
 
     private def initializeContext(): Unit = {
         // create instance
-        val conf = new SparkConf().setAppName("CovidRank").setMaster("local[*]")
+        val conf = new SparkConf().setAppName("CovidPubRank").setMaster("local[*]")
         val sc = new SparkContext(conf)
         sc.setLogLevel("ERROR")
         // configure
@@ -18,7 +18,7 @@ object SparkContextSingleton {
         this.context = sc
     }
 
-    def getContext(): SparkContext = {
+    def getContext: SparkContext = {
         if (context == null) initializeContext()
         this.context
     }
