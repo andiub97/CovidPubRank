@@ -1,9 +1,21 @@
 package utils
 
+import ranking.{DistributedPageRank, DistributedPageRankOptimized}
+import ranking.algorithmTraits.AlgorithmInterface
+
 import java.io.{FileWriter, PrintWriter}
 
 
 object FileUtility {
+
+    def chooseDistributedPageRank(str: String): AlgorithmInterface = {
+        if ((str == "data/citations_1.txt") || (str == "gs://citations_bucket/citations_1.txt")){
+            new DistributedPageRankOptimized()
+        }else{
+            new DistributedPageRank()
+        }
+    }
+
 
     def exportAlgorithmsResults(path: String, exec_times: Map[String, (Double, String)]): Unit = {
         //SparkContextSingleton.getContext.parallelize(exec_times.toSeq).coalesce(1,true).saveAsTextFile(path)
