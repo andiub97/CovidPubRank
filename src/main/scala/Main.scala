@@ -1,7 +1,7 @@
 import org.apache.spark.graphx.{Edge, Graph}
 import org.apache.spark.rdd.RDD
 import ranking._
-import ranking.algorithmTraits.{AlgorithmInterface, LibraryAlgorithms, ListAlgorithms}
+import ranking.algorithmTraits.{AlgorithmInterface, LibraryAlgorithms, ListAlgorithms, NotLibraryAlgorithms}
 import utils.{FileUtility, SparkContextSingleton, VisualizationUtils}
 
 object Main {
@@ -12,19 +12,14 @@ object Main {
         algorithm.setContext(sc)
         algorithm match {
 
-            case r @ (_: DistributedPageRank ) =>
+            case r @ (_: DistributedPageRank | _: DistributedPageRankOptimized ) =>
                 val start_time = System.nanoTime
                 val distEdgesList = sc.parallelize(edgesList)
                 var ranking: List[(Int,Float)] = null
-
-                if ((graphFilePath == "data/citations_1.txt") || (graphFilePath == "gs://citations_bucket/citations_1.txt")){
-                    ranking = r.asInstanceOf[DistributedPageRankOptimized].rank(distEdgesList: RDD[(Int,Int)],N)
-                }else{
-                    ranking = r.rank(distEdgesList: RDD[(Int,Int)],N)
-                }
+                ranking = r.asInstanceOf[NotLibraryAlgorithms].rank(distEdgesList: RDD[(Int,Int)],N)
 
                 val duration = (System.nanoTime - start_time) / 1e9d
-                r.getClass.getName -> (ranking, duration)
+                "DistributedPageRank" -> (ranking, duration)
 
 
 
@@ -58,18 +53,20 @@ object Main {
         val algorithmName = if (args.length > 0) args(0) else "allAlgorithms"
         val graphFilePath = if (args.length > 1) args(1) else "data/citations_500.txt"
         val outputFilePath = if (args.length > 2) args(2) else "src/main/scala/output"
+
+        val distributedAlgorithm: AlgorithmInterface = FileUtility.chooseDistributedPageRank(graphFilePath: String)
         // Chart size
         val topK: Int = 3
         // Pick the ranking algorithm
         val r : List[AlgorithmInterface] =
             algorithmName match {
-                case "DistributedPageRank" => List( new DistributedPageRank())
+                case "DistributedPageRank" => List(distributedAlgorithm)
                 case "PageRank" => List( new PageRank())
                 case "PageRankLibrary" => List(new PageRankLibrary())
                 case "ParallelPageRankLibrary" => List(new ParallelPageRankLibrary())
                 case "NotDistributedAlgorithms" => List(new PageRank(), new PageRankLibrary())
-                case "DistributedAlgorithms" => List(new DistributedPageRank(), new ParallelPageRankLibrary())
-                case "allAlgorithms" => List(new DistributedPageRank(), new ParallelPageRankLibrary(), new PageRank(), new PageRankLibrary())
+                case "DistributedAlgorithms" => List(distributedAlgorithm, new ParallelPageRankLibrary())
+                case "allAlgorithms" => List(distributedAlgorithm, new ParallelPageRankLibrary(), new PageRank(), new PageRankLibrary())
             }
 
         // Report algorithm
