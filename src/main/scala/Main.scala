@@ -8,6 +8,7 @@ object Main {
 
 
     def performRanking(graphFilePath: String, edgesList: List[(Int, Int)], N: Int, algorithm: AlgorithmInterface): (String, (List[(Int, Float)], Double)) = {
+
         val sc = SparkContextSingleton.getContext
         algorithm.setContext(sc)
         algorithm match {
@@ -20,8 +21,6 @@ object Main {
 
                 val duration = (System.nanoTime - start_time) / 1e9d
                 "DistributedPageRank" -> (ranking, duration)
-
-
 
             case r : PageRank =>
                 val start_time = System.nanoTime
@@ -50,9 +49,12 @@ object Main {
 
     def main(args: Array[String]): Unit = {
         // Parse program arguments
-        val algorithmName = if (args.length > 0) args(0) else "allAlgorithms"
-        val graphFilePath = if (args.length > 1) args(1) else "data/citations_500.txt"
-        val outputFilePath = if (args.length > 2) args(2) else "src/main/scala/output"
+        val par = if (args.length > 0) args(0) else "local"
+        val algorithmName = if (args.length > 1) args(1) else "PageRank"
+        val graphFilePath = if (args.length > 2) args(2) else "data/citations_500.txt"
+        val outputFilePath = if (args.length > 3) args(3) else "src/main/scala/output"
+
+        val sparkSession = SparkContextSingleton.sparkContext(par)
 
         val distributedAlgorithm: AlgorithmInterface = FileUtility.chooseDistributedPageRank(graphFilePath: String)
         // Chart size
@@ -72,7 +74,6 @@ object Main {
         // Report algorithm
         println("Using algorithm "+algorithmName)
         println("Loading graph from "+graphFilePath)
-
 
             val edgesList = FileUtility.loadGraphFromFile(graphFilePath)
             val nodes = FileUtility.loadNodesFromFile(graphFilePath)
