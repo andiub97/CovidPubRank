@@ -14,15 +14,17 @@ class DistributedPageRank() extends AlgorithmInterface with NotLibraryAlgorithms
      * @param N number of nodes in the graph
      **/
 
+        val parallelism = this.context.getConf.get("spark.default.parallelism").toInt
+
     override def rank(edgesList: T, N: Int): List[(Int, Float)] = {
         val damping : Float = 0.85f
 
         val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.map(edge => (edge._2, edge._1)).groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
         val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)).toList)
         val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
-        val outEdges = outEdgesTmp.union(mockOutEdges).partitionBy(new HashPartitioner(4))
+        val outEdges = outEdgesTmp.union(mockOutEdges).partitionBy(new HashPartitioner(parallelism))
 
-        var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new HashPartitioner(4))
+        var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new HashPartitioner(parallelism))
 
         // Runs PageRank until convergence.
 
@@ -35,7 +37,7 @@ class DistributedPageRank() extends AlgorithmInterface with NotLibraryAlgorithms
                           nodeSuccessor: Int =>
                               (nodeSuccessor, rank / outDegree)
                       }
-              }.partitionBy(new HashPartitioner(4))
+              }.partitionBy(new HashPartitioner(parallelism))
 
             pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
               .mapValues(score => (1 - damping) / N + damping * score)
