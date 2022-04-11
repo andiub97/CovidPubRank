@@ -5,12 +5,13 @@
 </p>
 
 Project for the course "Scalable and Cloud Programming" of the University of Bologna, A.Y. 2021/2022.  
-The project aims at implementing the grid-based clustering algorithm presented in the reference paper by exploiting the MapReduce paradigm.
+The project aims at implementing library PageRank and custom PageRank algorithms exploiting the MapReduce paradigm.
 
 # Introduction
 The purpose of the project was to implement a page rank application of scientific articles concerning Covid-19.  
 Different size of datasets and different page rank algorithms were been used to test the weak scalability and the different performance of the application.\
 To test the strong scalability of the algorithms implemented in our project it was been used Google Cloud Platform (GCP) which allowed us to increase the performances by adding or removing resources from the system.
+
 # Steps
 The implementation of our application is mainly composed by three main steps:
 
@@ -52,5 +53,123 @@ The computation of the distributed ranking algorithms is executed through parall
 The two classes of algorithms have different time computation performance.
 
 
+## Spark Session configuration
+
+For handling Spark Context parameters, we create a Spark Session, set values for parameters like
+"spark.driver.memory" and "spark.executor.memory" for establishing max RAM portion memory dedicated to Spark,
+"spark.default.parallelism" indicating default number of partitions in RDDs returned by transformations like join or reduceByKeyt
+and master properties for establishing how many threads using for parallelism. You can choose if create
+an "application.conf" file inside "src/main/resources" path for specifying values for eventually environment
+variables, or directly replace the variables passed as parameters for creating the Spark Session builder 
+with values. Follow the structure of an application.conf file example:
+
+![env_file_example](images/env_prototype.PNG)
+
+You can find our implementation in SparkContextSingleton file on src/main/scala/utils.
+
+# Cloud execution on GCP 
+
+To test the algorithms on Google Cloud Platform, the first step is create a Google Cloud project.
+Then consider enabling the following services for the previously created project:
+
+- Dataproc
+- Cloud Storage
+
+Moreover, it is necessary enable billing for the project.
+We suggest installing the Google Cloud SDK for CLIs in your system for using GCP, instead using Google
+Cloud Platform console. Do so following [this guide](https://cloud.google.com/sdk/docs/install).
+Once you have completed all previous steps, you can manage buckets, clusters and jobs using google 
+Cloud SDK for CLIs or open our Colab notebook available on this repo.
+
+### Creating buckets and citations uploading
+All files for the project (JAR executables and TXT datasets) need to be stored in a Cloud Storage bucket.
+Access to the tar archive containing all citation datasets in the data folder, extract and publish them to the bucket, once it is created.
+Import the project in sbt, generate the JAR file of the project and copy it to another bucket. Then 
+remember to create the bucket for Page Rank algorithms output, too.
+```
+gsutil mb -l $REGION gs://$BUCKET_NAME
+```
+`$REGION` and `$BUCKET_NAME` can be environment variables, or you can just substitute them with the actual value.
+Regions can be found [here](https://cloud.google.com/about/locations).
+Beware the bucket name must be unique in the whole Google Cloud Platform, not only in your account.
+
+### Provisioning cluster 
+```
+gcloud dataproc clusters create $CLUSTER_NAME --region $REGION --zone $ZONE --master-machine-type $MASTER_MACHINE_TYPE --num-workers $NUM_WORKERS --worker-machine-type $WORKER_MACHINE_TYPE
+```
+
+Again, you can use environment variables or substitute them with values. The meaning of these variables is the following:
+
+- `$CLUSTER_NAME` is the name of the cluster, you may choose one.
+- `$REGION` and `$ZONE`, please follow the link in the section above.
+- `$MASTER_MACHINE_TYPE` and `$WORKER_MACHINE_TYPE` can be specified by chosen one of machine types available in this list.
+- `$NUM_WORKERS` is the number of total workers (the master is not included in this number) the master can utilize.
+
+We suggest provisioning more than one cluster, at least one single node cluster for testing all algorithms, specifically 
+not distributed ones and another one cluster with at least two worker nodes. Please considering limitations on resources 
+available for cluster nodes based on machine types chosen (CPUs number, disk size, etc.).
+
+### Compiling the project and uploading the JAR file to the bucket in Cloud Storage
+```
+sbt clean package
+gsutil cp target/scala-2.12/covidpubrank_2.12-0.1.0-SNAPSHOT.jar gs://$BUCKET_NAME/covidpubrank_2.12-0.1.0-SNAPSHOT.jar
+```
+`$BUCKET_NAME` shall be the one used in the sections above for project jar file.
+
+### Submit a job in Dataproc
+```
+gcloud dataproc jobs submit spark [--id $JOB_ID] [--async] --cluster=$CLUSTER_NAME --region=$REGION \
+--jar=gs://$BUCKET_NAME/covidpubrank_2.12-0.1.0-SNAPSHOT.jar \
+ "$MACHINE_CONFIG" "$PAGERANK_ALG" "gs://$CITATIONS_BUCKET_PATH" "gs://$OUTPUT_BUCKET"
+```
+Use `--async` if you want to send the job and not wait for the result. The meaning of these variables is the following:
+- `$JOB_ID` may be chosen freely, it is just for identification purposes.
+- `$CLUSTER_NAME`, `$REGION` are those defined in the above sections.
+- `$BUCKET_NAME` stands for the bucket containing the jar file of the project
+- `$MACHINE_CONFIG` may be equal to "single-node", "2-worker", "3-worker" or "4-worker" and other configurations defined
+in .env file (create and define new machine configuration .env file).
+- `$PAGERANK_ALG` indicates the Page Rank algorithm desired for the execution (choose not distributed algorithms in 
+combination with single-node cluster and vice-versa for multi-node cluster). Available algorithms are "PageRank", 
+"PageRankLibrary", "DistributedPageRank" and "ParallelPageRankLibrary".
+- `$CITATIONS_BUCKET_PATH` identifies the path to the bucket containing the chosen citation dataset (available datasets are
+"citations_500.txt", "citations_100.txt", "citations_50.txt", "citations_1.txt").
+- `$OUTPUT_BUCKET_PATH` is the path to the sub-folder of the bucket designated for storing the file including statistics 
+of algorithms. Choose different paths for each job or delete before using them again, although you will have an error. 
+
+### Delete cluster
+Gcloud offers commands for delete clusters, list jobs in execution and executed and also delete them.
+```
+!gcloud dataproc clusters delete $CLUSTER_NAME \
+    --region=$REGION
+```
+Again, you can use environment variables or substitute them with values. The meaning of these variables is the following:
+- `$CLUSTER_NAME` and `$REGION` are those defined in the above sections.
+
+### Strong and weak scalability
+
+It is possible submit different jobs on more than one cluster to obtain the execution times of our Page Rank algorithms 
+and compare them to see the project scalability. In particular:
+- Strong Scalability shows Spark scalability of multiple Dataproc cluster, varying in number of worker nodes, 
+for a dated dataset. We suggest testing single-worker, two-worker and three-worker cluster by submitting jobs choosing 
+larger datasets to see performances.
+- Weak Scalability focuses on scalability of a certain cluster provided with a stated number of workers, varying in the size of 
+different datasets. In case of larger datasets, we suggest using no-single-worker clusters and distributed algorithms for 
+better performances.
+
+### Plot statistics
 
 
+---
+### Colab notebook
+
+Prerequisites for using the notebook:
+- Allow Colab to access your Google account
+- Allow Colab to access Google Drive service (just for using environment variables, it's optional)
+
+Once created a project on GCP, enabled Google services cited in above section and billing option for the project,
+it is possible open Colab notebook available in this repo using your logged-in Google account and perform almost steps
+described in the "Cloud execution on GCP" section. You can choose if upload a file on Drive describing
+the environment variables that will be used on the notebook (obviously modify them or add new ones), or just replace variables with correct values.
+In this Colab notebook it is possible create buckets and upload jar file and datasets of the project into them,
+create cluster and submit jobs to test strong and weak scalability, delete cluster and jobs once getting
+statistic of algorithms and finally plot them using specific python script.
