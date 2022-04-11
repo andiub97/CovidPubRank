@@ -11,7 +11,7 @@ object Main {
         val sc = SparkContextSingleton.getContext
         algorithm.setContext(sc)
         algorithm match {
-
+list
             case r @ (_: DistributedPageRank | _: DistributedPageRankOptimized ) =>
                 val start_time = System.nanoTime
                 val distEdgesList = sc.parallelize(edgesList)

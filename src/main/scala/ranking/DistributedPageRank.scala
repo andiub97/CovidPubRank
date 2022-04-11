@@ -21,7 +21,7 @@ class DistributedPageRank() extends AlgorithmInterface with NotLibraryAlgorithms
         val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)).toList)
         val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
         val outEdges = outEdgesTmp.union(mockOutEdges).partitionBy(new HashPartitioner(4))
-
+        outEdges.map(x => (print(x._1), println(x._2)))
         var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new HashPartitioner(4))
 
         // Runs PageRank until convergence.

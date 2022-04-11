@@ -11,7 +11,7 @@ object FileUtility {
     def chooseDistributedPageRank(str: String): AlgorithmInterface = {
         if ((str == "data/citations_1.txt") || (str == "gs://citations_bucket/citations_1.txt")){
             new DistributedPageRankOptimized()
-        }else{
+        } else{
             new DistributedPageRank()
         }
     }
