@@ -1,6 +1,7 @@
 package ranking.algorithmTraits
 
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import utils.SparkContextSingleton
 
 trait AlgorithmInterface {
@@ -10,5 +11,5 @@ trait AlgorithmInterface {
   def setContext(sc: SparkContext): Unit = {
     this.context = sc
   }
-  def rank(edgesList: T, N: Int): List[(Int, Float)]
+  def rank(edgesList: T, N: Int): RDD[(Int, Float)]
 }
