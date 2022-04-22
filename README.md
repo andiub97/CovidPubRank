@@ -57,7 +57,7 @@ The two classes of algorithms have different time computation performance.
 
 For handling Spark Context parameters, we create a Spark Session, set values for parameters like
 "spark.driver.memory" and "spark.executor.memory" for establishing max RAM portion memory dedicated to Spark,
-"spark.default.parallelism" indicating default number of partitions in RDDs returned by transformations like join or reduceByKeyt
+"spark.default.parallelism" indicating default number of partitions in RDDs returned by transformations like join or reduceByKey
 and master properties for establishing how many threads using for parallelism. You can choose if create
 an "application.conf" file inside "src/main/resources" path for specifying values for eventually environment
 variables, or directly replace the variables passed as parameters for creating the Spark Session builder 
