@@ -1,6 +1,7 @@
 package ranking
 
 import org.apache.spark.graphx.{EdgeTriplet, Graph, Pregel, VertexId}
+import org.apache.spark.rdd.RDD
 import ranking.algorithmTraits.{AlgorithmInterface, LibraryAlgorithms}
 
 class ParallelPageRankLibrary extends AlgorithmInterface with LibraryAlgorithms {
@@ -11,7 +12,7 @@ class ParallelPageRankLibrary extends AlgorithmInterface with LibraryAlgorithms 
    * @param graph   graph nodes and edges
    * @param N       number of nodes in the graph
    * */
-  override def rank(graph: T, N: Int): List[(Int, Float)] = {
+  override def rank(graph: T, N: Int): RDD[(Int, Float)] = {
 
     val resetProb = 0.15
     val pagerankGraph: Graph[Double, Double] = graph
@@ -38,6 +39,6 @@ class ParallelPageRankLibrary extends AlgorithmInterface with LibraryAlgorithms 
 
     val res = pr.vertices.map(v => (v._1.toInt, v._2.toFloat))
 
-    res.collect().toList.sortBy(- _._2)
+    res.sortBy(- _._2)
   }
 }

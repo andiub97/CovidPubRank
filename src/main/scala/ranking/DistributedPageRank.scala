@@ -17,7 +17,7 @@ val parallelism = this.context.getConf.get("spark.default.parallelism").toInt
      * @param N number of nodes in the graph
      **/
 
-    override def rank(edgesList: T, N: Int): List[(Int, Float)] = {
+    override def rank(edgesList: T, N: Int): RDD[(Int, Float)] = {
         val damping : Float = 0.85f
 
         val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.map(edge => (edge._2, edge._1)).groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
@@ -37,13 +37,13 @@ val parallelism = this.context.getConf.get("spark.default.parallelism").toInt
                           nodeSuccessor: Int =>
                               (nodeSuccessor, rank / outDegree)
                       }
-              }.partitionBy(new HashPartitioner(parallelism))
+              }//.partitionBy(new HashPartitioner(parallelism))
 
             pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
               .mapValues(score => (1 - damping) / N + damping * score)
         }
 
-        pageRank.sortBy(- _._2).collect().toList
+        pageRank.sortBy(- _._2)
     }
 
 }

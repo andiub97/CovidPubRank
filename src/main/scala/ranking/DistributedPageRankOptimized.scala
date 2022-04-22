@@ -12,9 +12,10 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
    * @param edgesList list of graph's edges
    * @param N number of nodes in the graph
    **/
+
   val parallelism = this.context.getConf.get("spark.default.parallelism").toInt
 
-  override def rank(edgesList: T, N: Int): List[(Int, Float)] = {
+  override def rank(edgesList: T, N: Int): RDD[(Int, Float)] = {
     val damping : Float = 0.85f
 
     val outEdges = edgesList.groupBy(e => e._1).mapValues(_.map(_._2)).partitionBy(new HashPartitioner(parallelism))
@@ -23,7 +24,7 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
 
     // Runs PageRank until convergence.
 
-    for (_ <- 1 to 10) {
+    for (_ <- 1 to 7) {
       val nodeSuccessorsScores = outEdges.join(pageRank)
         .flatMap {
           case (_: Int, (nodeSuccessors: List[Int], rank: Float)) =>
@@ -38,7 +39,7 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
         .mapValues(score => (1 - damping) / N + damping * score)
     }
 
-    pageRank.sortBy(- _._2).collect().toList
+    pageRank.sortBy(- _._2)
   }
 
 }
