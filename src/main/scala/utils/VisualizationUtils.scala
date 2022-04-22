@@ -1,5 +1,7 @@
 package utils
 
+import org.apache.spark.rdd.RDD
+
 
 object VisualizationUtils {
 
@@ -10,12 +12,14 @@ object VisualizationUtils {
      * @param nodes  : articles labels and titles.
      * @param k          : number of articles to print.
      * */
-    def printTopK(rank: List[(Int, Float)], nodes: Map[Int, String], k: Int = 10): Unit = {
-        val limit = k.min(rank.length)
+    def printTopK(rank: RDD[(Int, Float)], nodes: RDD[(Int, String)], topK: Int): Unit = {
+        val topKNodes = nodes.collect.toMap
+        val topKRank = rank.collect.toList
 
-        for (i <- 0 until limit) {
-            println(nodes(rank(i)._1), rank(i)._1, rank(i)._2)
 
+        for (i <- 0 until topK) {
+
+            println(topKNodes(i), topKRank(i)._2)
         }
     }
 
