@@ -1,7 +1,7 @@
 import org.apache.spark.graphx.{Edge, Graph}
 import org.apache.spark.rdd.RDD
 import ranking._
-import ranking.algorithmTraits.{AlgorithmInterface, LibraryAlgorithms, NotLibraryAlgorithms}
+import ranking.algorithmTraits.{AlgorithmInterface, LibraryAlgorithms, ListAlgorithms, NotLibraryAlgorithms}
 import utils.{FileUtility, SparkContextSingleton, VisualizationUtils}
 
 object Main {
@@ -24,7 +24,8 @@ object Main {
 
             case r : PageRank =>
                 val start_time = System.nanoTime
-                val ranking = r.rank(edgesList.collect().toList: List[(Int,Int)],N)
+
+                val ranking = r.asInstanceOf[ListAlgorithms].rank(edgesList.collect().toList: List[(Int,Int)],N)
                 val duration = (System.nanoTime - start_time) / 1e9d
                 r.getClass.getName -> (ranking, duration)
 
@@ -50,10 +51,10 @@ object Main {
         // Parse program arguments
         val par = if (args.length > 0) args(0) else "local"
         val algorithmName = if (args.length > 1) args(1) else "allAlgorithms"
-        val graphFilePath = if (args.length > 2) args(2) else "data/dataset_1760.txt"
+        val graphFilePath = if (args.length > 2) args(2) else "data/dataset_9648.txt"
         val outputFilePath = if (args.length > 3) args(3) else "src/main/scala/output"
 
-        SparkContextSingleton.sparkContext(par)
+        val sparkSession = SparkContextSingleton.sparkContext(par)
 
         val distributedAlgorithm: AlgorithmInterface = FileUtility.chooseDistributedPageRank(graphFilePath: String)
         // Chart size
@@ -67,7 +68,7 @@ object Main {
                 case "ParallelPageRankLibrary" => List(new ParallelPageRankLibrary())
                 case "NotDistributedAlgorithms" => List(new PageRank(), new PageRankLibrary())
                 case "DistributedAlgorithms" => List(distributedAlgorithm, new ParallelPageRankLibrary())
-                case "allAlgorithms" => List(new PageRank(),distributedAlgorithm, new ParallelPageRankLibrary(), new PageRankLibrary())
+                case "allAlgorithms" => List(distributedAlgorithm, new ParallelPageRankLibrary(), new PageRankLibrary())
             }
 
         // Report algorithm
@@ -83,16 +84,14 @@ object Main {
         // Perform ranking
         var ranking: Map[String, (RDD[(Int, Float)], Double)] = null
 
-        ranking = r.map(algorithm => performRanking(graphFilePath, edgesList, N, algorithm)).toMap
+        ranking = r.map(algorithm => performRanking(graphFilePath, edgesList, N, algorithm)).take(topK).toMap
         // Print all the results
         ranking.map(r => (println(r._1), println(r._2._2), VisualizationUtils.printTopK(r._2._1, nodes, topK)))
         // Get execution time for each ranking algorithm
         val exec_times = ranking.map(r => (r._1, r._2._2 ))
         // Export results to txt file
-        if (args.length > 2)
-            FileUtility.exportAlgorithmsResults(outputFilePath, exec_times, args(0), args(2))
-        else
-            FileUtility.exportAlgorithmsResults(outputFilePath, exec_times, "0","data/dataset_1760.txt")
+
+        FileUtility.exportAlgorithmsResults(outputFilePath, exec_times, args(0), args(2))
 
     }
 
