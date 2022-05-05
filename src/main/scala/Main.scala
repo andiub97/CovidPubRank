@@ -48,7 +48,7 @@ object Main {
 
     def main(args: Array[String]): Unit = {
         // Parse program arguments
-        print("ciao")
+        print("ciaoo")
         val par = if (args.length > 0) args(0) else "local"
         val algorithmName = if (args.length > 1) args(1) else "allAlgorithms"
         val graphFilePath = if (args.length > 2) args(2) else "data/dataset_1760.txt"

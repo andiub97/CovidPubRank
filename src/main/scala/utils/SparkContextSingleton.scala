@@ -22,6 +22,7 @@ object SparkContextSingleton {
           .config("spark.executor.memory", "14g")
           .config("spark.default.parallelism", par)
           .config("spark.executor.memoryOverhead", "2048")
+          .config("spark.executor.cores",4)
           .master(master)
 
         builder.getOrCreate()
