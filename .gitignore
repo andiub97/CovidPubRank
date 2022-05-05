@@ -179,3 +179,16 @@ project/plugins/project/
 .cache
 .lib/
 /src/main/resources/application.conf
+/.idea/.gitignore
+/project/build.properties
+/images/Cattura.PNG
+/.idea/codeStyles/codeStyleConfig.xml
+/.idea/modules/CovidPubRank.iml
+/.idea/modules/CovidPubRank-build.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/codeStyles/Project.xml
+/.bsp/sbt.json
+/.idea/sbt.xml
+/.idea/scala_compiler.xml
+/.idea/vcs.xml
