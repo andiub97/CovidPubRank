@@ -1,12 +1,13 @@
 package ranking
 
 import org.apache.spark.rdd.RDD
-import ranking.algorithmTraits.{AlgorithmInterface, ListAlgorithms}
+import ranking.algorithmTraits.AlgorithmInterface
 
 import scala.collection.immutable.Map
 
-class PageRank() extends AlgorithmInterface with ListAlgorithms {
+class PageRank() extends AlgorithmInterface {
 
+  type T = List[(Int, Int)]
     /**
      * Performs ranking of a graph's nodes by using PageRank algorithm
      *

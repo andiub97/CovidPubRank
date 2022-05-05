@@ -24,7 +24,7 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
 
     // Runs PageRank until convergence.
 
-    for (_ <- 1 to 7) {
+    for (_ <- 1 to 10) {
       val nodeSuccessorsScores = outEdges.join(pageRank)
         .flatMap {
           case (_: Int, (nodeSuccessors: List[Int], rank: Float)) =>

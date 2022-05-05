@@ -4,6 +4,8 @@ import org.apache.spark.rdd.RDD
 import ranking.algorithmTraits.AlgorithmInterface
 import ranking.{DistributedPageRank, DistributedPageRankOptimized}
 
+import java.io.{FileWriter, PrintWriter}
+
 
 object FileUtility {
 
@@ -18,16 +20,16 @@ object FileUtility {
 
     def exportAlgorithmsResults(path: String, exec_times: Map[String, Double], numWorker: String, dataset: String): Unit = {
 
-            /*val pw = new PrintWriter(new FileWriter(path))
-            exec_times.foreach(e => (pw.print(e._1 + ","), pw.print(e._2 + ","), pw.println(dataset)))
-            pw.close()*/
+        val pw = new PrintWriter(new FileWriter(path))
+        exec_times.foreach(e => (pw.print(e._1 + ","), pw.print(e._2 + ","), pw.println(dataset)))
+        pw.close()
 
-        if(numWorker != "local"){
+        /*if(numWorker != "local"){
             SparkContextSingleton.getContext.parallelize(exec_times.map(t => (t._1, t._2, numWorker)).toSeq).coalesce(1,true).saveAsTextFile(path)
 
         }else{
             SparkContextSingleton.getContext.parallelize(exec_times.toSeq).coalesce(1,true).saveAsTextFile(path)
-        }
+        }*/
 
     }
 
