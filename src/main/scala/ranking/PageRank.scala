@@ -1,12 +1,12 @@
 package ranking
 
 import org.apache.spark.rdd.RDD
-import ranking.algorithmTraits.AlgorithmInterface
+import ranking.algorithmTraits.{AlgorithmInterface, ListAlgorithms}
 
 import scala.collection.immutable.Map
 
-class PageRank() extends AlgorithmInterface {
-    type T = List[(Int,Int)]
+class PageRank() extends AlgorithmInterface with ListAlgorithms {
+
     /**
      * Performs ranking of a graph's nodes by using PageRank algorithm
      *
@@ -19,7 +19,6 @@ class PageRank() extends AlgorithmInterface {
       NOTE: There will never be a node with zero outgoing nodes, during calculation of PageRank.
             This is because when we consider an incoming node B for a node A, B must have at least the link to A.
        */
-
       val outgoingCnt: Map[Int, Int] = edgesList.map(edge => (edge._1, 1)).groupBy(_._1).mapValues(_.map(_._2).sum)
       var pr: Map[Int, Float] = (0 until N).map(nodeIndex => (nodeIndex, 0.15f / N)).toMap
 
