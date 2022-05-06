@@ -21,7 +21,7 @@ val parallelism = this.context.getConf.get("spark.default.parallelism").toInt
         val damping : Float = 0.85f
 
         val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.map(edge => (edge._2, edge._1)).groupBy(edge => edge._2).mapValues(_.map(_._1))
-        val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)).toList,parallelism)
+        val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)))
         val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1))
         val outEdges = outEdgesTmp.union(mockOutEdges).persist()
         var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new HashPartitioner(parallelism))

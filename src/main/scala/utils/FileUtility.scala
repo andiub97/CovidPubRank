@@ -14,7 +14,7 @@ object FileUtility {
     val parallelism = SparkContextSingleton.getContext.getConf.get("spark.default.parallelism").toInt
 
     def chooseDistributedPageRank(str: String): AlgorithmInterface = {
-        if ((str == "data/dataset_32686.txt") || (str == "gs://citations_bucket/data/dataset_1015682.txt")){
+        if ((str == "data/citations_1.txt") || (str == "gs://citations_bucket/data/dataset_1015682.txt")){
             new DistributedPageRankOptimized()
         } else{
             new DistributedPageRank()
