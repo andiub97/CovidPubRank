@@ -1,5 +1,6 @@
 package utils
 
+import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 import ranking.algorithmTraits.AlgorithmInterface
 import ranking.{DistributedPageRank, DistributedPageRankOptimized}
@@ -9,6 +10,8 @@ import scala.io.Source
 
 
 object FileUtility {
+
+    val parallelism = SparkContextSingleton.getContext.getConf.get("spark.default.parallelism").toInt
 
     def chooseDistributedPageRank(str: String): AlgorithmInterface = {
         if ((str == "data/dataset_32686.txt") || (str == "gs://citations_bucket/data/dataset_1015682.txt")){
@@ -42,12 +45,12 @@ object FileUtility {
      * */
     def loadEdgesFromFile(path: String): RDD[(Int, Int)] = {
 
-        val graphFile=Source.fromFile(path).getLines
         //val graphFile = SparkContextSingleton.getContext.textFile(path)
+        val graphFile = Source.fromFile(path).getLines
         val edgesList: RDD[(Int, Int)] = SparkContextSingleton.getContext.parallelize(graphFile
           .filter(line => line.startsWith("e"))
           .map(line => line.split("\\s"))
-          .map(tokens => (tokens(1).toInt, tokens(2).toInt)).toSeq, parallelism)
+          .map(tokens => (tokens(1).toInt, tokens(2).toInt)).toSeq,parallelism)
           edgesList
     }
 
@@ -55,11 +58,12 @@ object FileUtility {
      * Loads node labels from a given file path.
      * */
     def loadNodesFromFile(path: String): RDD[(Int, String)] = {
-        val graphFile = SparkContextSingleton.getContext.textFile(path)
-        val nodes: RDD[(Int, String)] = graphFile
+        val graphFile = Source.fromFile(path).getLines
+        //val graphFile = SparkContextSingleton.getContext.textFile(path)
+        val nodes: RDD[(Int, String)] = SparkContextSingleton.getContext.parallelize(graphFile
           .filter(line => line.startsWith("n"))
           .map(line => line.split("\\s").splitAt(2))
-          .map(tokens => (tokens._1(1).toInt, tokens._2.mkString(" ")))
+          .map(tokens => (tokens._1(1).toInt, tokens._2.mkString(" "))).toSeq,parallelism)
         nodes
     }
 

@@ -50,11 +50,11 @@ object Main {
     def main(args: Array[String]): Unit = {
         // Parse program arguments
         val par = if (args.length > 0) args(0) else "local"
-        val algorithmName = if (args.length > 1) args(1) else "allAlgorithms"
-        val graphFilePath = if (args.length > 2) args(2) else "data/dataset_1760.txt"
+        val algorithmName = if (args.length > 1) args(1) else "DistributedPageRank"
+        val graphFilePath = if (args.length > 2) args(2) else "data/citations_1.txt"
         val outputFilePath = if (args.length > 3) args(3) else "src/main/scala/output"
 
-        val sparkSession = SparkContextSingleton.sparkContext(par)
+        SparkContextSingleton.sparkContext(par)
 
         val distributedAlgorithm: AlgorithmInterface = FileUtility.chooseDistributedPageRank(graphFilePath: String)
         // Chart size
