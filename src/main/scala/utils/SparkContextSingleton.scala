@@ -18,11 +18,11 @@ object SparkContextSingleton {
 
     def _sparkSession(par: String, master: String): SparkSession = {
         var builder = SparkSession.builder.appName("CovidPubRank")
-          .config("spark.driver.memory", "14g")
-          .config("spark.executor.memory", "14g")
+          //.config("spark.driver.memory", "14g")
+          //.config("spark.executor.memory", "14g")
           .config("spark.default.parallelism", par)
-          .config("spark.executor.memoryOverhead", "2048")
-          .config("spark.executor.cores",4)
+          //.config("spark.executor.memoryOverhead", "2048")
+          //.config("spark.executor.cores",4)
           .master(master)
 
         builder.getOrCreate()
@@ -32,11 +32,11 @@ object SparkContextSingleton {
 
         val session = conf match {
 
-            case "local" => _sparkSession("4", "local[*]")
+            case "local" => _sparkSession("200", "local[*]")
             case "single-node" => _sparkSession("12", "local[*]")
-            case "2-workers" => _sparkSession("2000", "yarn")
+            case "2-workers" => _sparkSession("1000", "yarn")
             case "3-workers" => _sparkSession("48", "yarn")
-            case "4-workers" => _sparkSession("3000", "yarn")
+            case "4-workers" => _sparkSession("1000", "yarn")
             case default => _sparkSession("4","local[*]")
         }
 
