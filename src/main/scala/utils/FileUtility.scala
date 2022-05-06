@@ -5,6 +5,7 @@ import ranking.algorithmTraits.AlgorithmInterface
 import ranking.{DistributedPageRank, DistributedPageRankOptimized}
 
 import java.io.{FileWriter, PrintWriter}
+import scala.io.Source
 
 
 object FileUtility {
@@ -40,11 +41,13 @@ object FileUtility {
      * Loads a graph's list of edges from a given file path.
      * */
     def loadEdgesFromFile(path: String): RDD[(Int, Int)] = {
-        val graphFile = SparkContextSingleton.getContext.textFile(path)
-        val edgesList: RDD[(Int, Int)] = graphFile
+
+        val graphFile=Source.fromFile(path).getLines
+        //val graphFile = SparkContextSingleton.getContext.textFile(path)
+        val edgesList: RDD[(Int, Int)] = SparkContextSingleton.getContext.parallelize(graphFile
           .filter(line => line.startsWith("e"))
           .map(line => line.split("\\s"))
-          .map(tokens => (tokens(1).toInt, tokens(2).toInt))
+          .map(tokens => (tokens(1).toInt, tokens(2).toInt)).toSeq, parallelism)
           edgesList
     }
 
