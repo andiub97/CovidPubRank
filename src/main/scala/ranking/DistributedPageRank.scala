@@ -2,6 +2,7 @@ package ranking
 
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
 import ranking.algorithmTraits.{AlgorithmInterface, NotLibraryAlgorithms}
 
 class DistributedPageRank() extends AlgorithmInterface with NotLibraryAlgorithms {
@@ -23,7 +24,7 @@ val parallelism = this.context.getConf.get("spark.default.parallelism").toInt
         val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.map(edge => (edge._2, edge._1)).groupBy(edge => edge._2).mapValues(_.map(_._1))
         val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)))
         val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1))
-        val outEdges = outEdgesTmp.union(mockOutEdges).persist()
+        val outEdges = outEdgesTmp.union(mockOutEdges).persist((StorageLevel.MEMORY_AND_DISK))
         var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new HashPartitioner(parallelism))
 
         // Runs PageRank until convergence.
