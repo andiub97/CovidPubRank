@@ -18,8 +18,8 @@ object SparkContextSingleton {
 
     def _sparkSession(par: String, master: String): SparkSession = {
         var builder = SparkSession.builder.appName("CovidPubRank")
-          //.config("spark.driver.memory", "14g")
-          //.config("spark.executor.memory", "14g")
+          //.config("spark.driver.memory", "10g")
+          //.config("spark.executor.memory", "10g")
           .config("spark.default.parallelism", par)
           //.config("spark.executor.memoryOverhead", "2048")
           //.config("spark.executor.cores",4)

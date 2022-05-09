@@ -32,7 +32,7 @@ class PageRank() extends AlgorithmInterface {
         pr = pr.map { case (nodeId: Int, _: Float) =>
           (nodeId, (1 - damping) / N + damping *
             edgesList.filter { case (_: Int, dest: Int) => dest == nodeId }
-              .map { case (incoming: Int, _: Int) => pr(incoming) / outgoingCnt(incoming) }.sum.toFloat
+              .map { case (incoming: Int, _: Int) => pr(incoming) / outgoingCnt(incoming) }.sum
           )
         }
       }

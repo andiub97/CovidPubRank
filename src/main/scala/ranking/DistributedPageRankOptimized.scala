@@ -2,6 +2,7 @@ package ranking
 
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.StorageLevel
 import ranking.algorithmTraits.{AlgorithmInterface, NotLibraryAlgorithms}
 
 class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryAlgorithms {
@@ -18,7 +19,7 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
   override def rank(edgesList: T, N: Int): RDD[(Int, Float)] = {
     val damping : Float = 0.85f
 
-    val outEdges = edgesList.groupBy(e => e._1).mapValues(_.map(_._2)).partitionBy(new HashPartitioner(parallelism)).persist()
+    val outEdges = edgesList.groupBy(e => e._1).mapValues(_.map(_._2)).partitionBy(new HashPartitioner(parallelism)).persist(StorageLevel.MEMORY_AND_DISK)
 
     var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new HashPartitioner(parallelism))
 
@@ -33,7 +34,7 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
               nodeSuccessor: Int =>
                 (nodeSuccessor, rank / outDegree)
             }
-        }//.partitionBy(new HashPartitioner(parallelism))
+        }
 
       pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
         .mapValues(score => (1 - damping) / N + damping * score)

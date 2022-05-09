@@ -14,7 +14,7 @@ object FileUtility {
     val parallelism = SparkContextSingleton.getContext.getConf.get("spark.default.parallelism").toInt
 
     def chooseDistributedPageRank(str: String): AlgorithmInterface = {
-        if ((str == "data/dataset_32686.txt") || (str == "gs://citations_bucket/data/dataset_1015682.txt")){
+        if ((str == "data/citations_1.txt") || (str == "gs://dataset_citation/citations_1.txt")){
             new DistributedPageRankOptimized()
         } else{
             new DistributedPageRank()
@@ -46,24 +46,30 @@ object FileUtility {
     def loadEdgesFromFile(path: String): RDD[(Int, Int)] = {
 
         //val graphFile = SparkContextSingleton.getContext.textFile(path)
-        val graphFile = Source.fromFile(path).getLines
+        /*val graphFile = Source.fromFile(path).getLines
         val edgesList: RDD[(Int, Int)] = SparkContextSingleton.getContext.parallelize(graphFile
           .filter(line => line.startsWith("e"))
           .map(line => line.split("\\s"))
           .map(tokens => (tokens(1).toInt, tokens(2).toInt)).toSeq,parallelism)
-          edgesList
+          edgesList*/
+        val graphFile = SparkContextSingleton.getContext.textFile(path)
+        val edgesList: RDD[(Int, Int)] = graphFile
+          .filter(line => line.startsWith("e"))
+          .map(line => line.split("\\s"))
+          .map(tokens => (tokens(1).toInt, tokens(2).toInt))
+        edgesList
     }
 
     /**
      * Loads node labels from a given file path.
      * */
     def loadNodesFromFile(path: String): RDD[(Int, String)] = {
-        val graphFile = Source.fromFile(path).getLines
-        //val graphFile = SparkContextSingleton.getContext.textFile(path)
-        val nodes: RDD[(Int, String)] = SparkContextSingleton.getContext.parallelize(graphFile
+        //val graphFile = Source.fromFile(path).getLines
+        val graphFile = SparkContextSingleton.getContext.textFile(path)
+        val nodes: RDD[(Int, String)] = graphFile
           .filter(line => line.startsWith("n"))
           .map(line => line.split("\\s").splitAt(2))
-          .map(tokens => (tokens._1(1).toInt, tokens._2.mkString(" "))).toSeq,parallelism)
+          .map(tokens => (tokens._1(1).toInt, tokens._2.mkString(" ")))
         nodes
     }
 
