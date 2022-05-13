@@ -12,7 +12,7 @@ import java.io.{FileWriter, PrintWriter}
 object FileUtility {
 
     def chooseDistributedPageRank(str: String): AlgorithmInterface = {
-        if ((str == "data/citations_1.txt") || (str == "gs://dataset_citation/citations_1.txt")){
+        if ((str == "data/dataset_1015681.txt") || (str == "gs://datasets/dataset_1015681.txt")){
             new DistributedPageRankOptimized()
         } else{
             new DistributedPageRank()

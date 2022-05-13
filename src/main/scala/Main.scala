@@ -48,7 +48,7 @@ object Main {
 
         // Parse program arguments
         val master = args(0)
-        val algorithmName = if (args.length > 1) args(1) else "DistributedPageRank"
+        val algorithmName = if (args.length > 1) args(1) else "allAlgorithms"
         val graphFilePath = if (args.length > 2) args(2) else "data/dataset_1760.txt"
         val outputFilePath = if (args.length > 3) args(3) else "src/main/scala/output"
         val parallelism =  if (args.length > 4) args(4) else "4"

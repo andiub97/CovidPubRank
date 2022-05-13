@@ -35,7 +35,7 @@ class DistributedPageRank() extends AlgorithmInterface with NotLibraryAlgorithms
                           nodeSuccessor: Int =>
                               (nodeSuccessor, rank / outDegree)
                       }
-              }.reduceByKey(_+_).mapValues(score => (1 - damping) / N + damping * score)//.partitionBy(new HashPartitioner(parallelism))
+              }.reduceByKey(_+_).mapValues(score => (1 - damping) / N + damping * score)
             pageRank = nodeSuccessorsScores
         }
 
