@@ -6,10 +6,5 @@ import utils.SparkContextSingleton
 
 trait AlgorithmInterface {
   type T
-  var context: SparkContext = SparkContextSingleton.getContext
-
-  def setContext(sc: SparkContext): Unit = {
-    this.context = sc
-  }
-  def rank(edgesList: T, N: Int): RDD[(Int, Float)]
+  def rank(edgesList: T, N: Int, sparkContext: SparkContext): RDD[(Int, Float)]
 }

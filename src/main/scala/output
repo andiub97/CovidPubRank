@@ -1,0 +1,2 @@
+ranking.DistributedPageRank,0.247121792,data/dataset_1760.txt
+ranking.ParallelPageRankLibrary,38.687450125,data/dataset_1760.txt

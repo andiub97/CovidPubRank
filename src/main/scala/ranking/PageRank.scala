@@ -1,5 +1,6 @@
 package ranking
 
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import ranking.algorithmTraits.AlgorithmInterface
 
@@ -14,7 +15,7 @@ class PageRank() extends AlgorithmInterface {
      * @param edgesList list of graph's edges
      * @param N number of nodes in the graph
      **/
-    override def rank(edgesList: T, N: Int): RDD[(Int, Float)] = {
+    override def rank(edgesList: T, N: Int,sparkContext:SparkContext): RDD[(Int, Float)] = {
       /*
       Get an of outgoing nodes counts for each node (map index is nodeId).
       NOTE: There will never be a node with zero outgoing nodes, during calculation of PageRank.
@@ -37,7 +38,7 @@ class PageRank() extends AlgorithmInterface {
         }
       }
       // sort in descending order by PageRank value
-      context.parallelize(pr.toList.sortBy(- _._2))
+      sparkContext.parallelize(pr.toList.sortBy(- _._2))
     }
 
 }

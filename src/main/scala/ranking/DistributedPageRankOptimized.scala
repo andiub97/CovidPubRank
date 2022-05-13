@@ -1,9 +1,10 @@
 package ranking
 
-import org.apache.spark.HashPartitioner
+import org.apache.spark.{HashPartitioner, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 import ranking.algorithmTraits.{AlgorithmInterface, NotLibraryAlgorithms}
+import utils.SparkContextSingleton
 
 class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryAlgorithms {
 
@@ -14,30 +15,28 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
    * @param N number of nodes in the graph
    **/
 
-  val parallelism = this.context.getConf.get("spark.default.parallelism").toInt
-
-  override def rank(edgesList: T, N: Int): RDD[(Int, Float)] = {
+  override def rank(edgesList: T, N: Int, sparkContext: SparkContext): RDD[(Int, Float)] = {
     val damping : Float = 0.85f
 
-    val outEdges = edgesList.groupBy(e => e._1).mapValues(_.map(_._2)).partitionBy(new HashPartitioner(parallelism)).persist(StorageLevel.MEMORY_AND_DISK)
+    val outEdges = edgesList.groupByKey(SparkContextSingleton.DEFAULT_PARALLELISM)
 
-    var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new HashPartitioner(parallelism))
+    var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N)
 
     // Runs PageRank until convergence.
 
     for (_ <- 1 to 10) {
       val nodeSuccessorsScores = outEdges.join(pageRank)
         .flatMap {
-          case (_: Int, (nodeSuccessors: List[Int], rank: Float)) =>
+          case (_: Int, (nodeSuccessors: Iterable[Int], rank: Float)) =>
             val outDegree = nodeSuccessors.size
             nodeSuccessors.map {
               nodeSuccessor: Int =>
                 (nodeSuccessor, rank / outDegree)
             }
-        }
-
-      pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
-        .mapValues(score => (1 - damping) / N + damping * score)
+        }.reduceByKey(_+_).mapValues(score => (1 - damping) / N + damping * score)
+      pageRank = nodeSuccessorsScores
+      //pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
+       // .mapValues(score => (1 - damping) / N + damping * score)
     }
 
     pageRank.sortBy(- _._2)
