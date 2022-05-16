@@ -35,8 +35,6 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
             }
         }.reduceByKey(_+_).mapValues(score => (1 - damping) / N + damping * score)
       pageRank = nodeSuccessorsScores
-      //pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
-       // .mapValues(score => (1 - damping) / N + damping * score)
     }
 
     pageRank.sortBy(- _._2)
