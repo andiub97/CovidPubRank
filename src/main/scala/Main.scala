@@ -1,7 +1,6 @@
 import org.apache.spark.SparkContext
 import org.apache.spark.graphx.{Edge, Graph}
 import org.apache.spark.rdd.RDD
-import ranking.ProvaPageRank.{GraphPageRank, PageRank}
 import ranking._
 import ranking.algorithmTraits.{AlgorithmInterface, LibraryAlgorithms, NotLibraryAlgorithms}
 import utils.{FileUtility, SparkContextSingleton, VisualizationUtils}
@@ -49,9 +48,11 @@ object Main {
         // Parse program arguments
         val master = args(0)
         val algorithmName = if (args.length > 1) args(1) else "allAlgorithms"
-        val graphFilePath = if (args.length > 2) args(2) else "data/dataset_1760.txt"
+        val graphFilePath = if (args.length > 2) args(2) else "data/dataset_9647.txt"
         val outputFilePath = if (args.length > 3) args(3) else "src/main/scala/output"
         val parallelism =  if (args.length > 4) args(4) else "4"
+        val mode = if (args.length > 5) args(5) else "local"
+        val distributedWorkers = if(args.length > 6) args(6) else "0"
 
         val sparkSession = SparkContextSingleton.sparkSession(master, parallelism.toInt)
         val sparkContext = sparkSession.sparkContext
@@ -86,7 +87,6 @@ object Main {
         var ranking: Map[String, (RDD[(Int, Float)], Double)] = null
 
         ranking = r.map(algorithm => performRanking(sparkContext, edgesList,nodes, N, algorithm)).toMap
-        //PageRank.computePageRank(sparkContext)
 
         // Print all the results
         ranking.map(r => (println(r._1), println(r._2._2), VisualizationUtils.printTopK(r._2._1, nodes, topK)))
@@ -94,10 +94,10 @@ object Main {
         val exec_times = ranking.map(r => (r._1, r._2._2 ))
         // Export results to txt file
 
-        if( args.length > 2 ){
-            FileUtility.exportAlgorithmsResults(outputFilePath, exec_times, args(0), args(2),sparkContext)
-        }else{
-            FileUtility.exportAlgorithmsResults(outputFilePath, exec_times, "local", "data/dataset_1760.txt", sparkContext)
+        if( mode == "local" ){
+            FileUtility.exportAlgorithmsResults(outputFilePath, exec_times, graphFilePath)
+        }else {
+            FileUtility.exportAlgorithmsResultsOnCloud(outputFilePath, exec_times, mode, graphFilePath, distributedWorkers, sparkContext)
         }
 
     }
