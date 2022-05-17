@@ -3,7 +3,7 @@ package utils
 import org.apache.spark.sql.SparkSession
 
 object SparkContextSingleton {
-    var DEFAULT_PARALLELISM = 1 // number of partitions
+    var DEFAULT_PARALLELISM = 4 // number of partitions
 
     private def _sparkSession(master: String): SparkSession = {
         var builder = SparkSession.builder.appName("CovidPubRank")

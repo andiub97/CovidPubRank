@@ -58,18 +58,18 @@ The two classes of algorithms have different time computation performance.
 
 ## Spark Session configuration
 
-For handling Spark Context parameters, we create a Spark Session and set values for parameters like
-"spark.driver.memory" and "spark.executor.memory" for establishing max RAM portion memory dedicated to Spark,
-"spark.default.parallelism" indicating default number of partitions in RDDs returned by transformations like 
-join or reduceByKey and master properties for establishing how many threads using for parallelism. You can choose if create
-an "application.conf" file inside "src/main/resources" path for specifying values to environment 
-variables, or directly replace the variables passed as parameters for creating the Spark Session builder 
-with values. Alternatively you can comment settings value and use default one. 
-Follow the structure of an application.conf file example:
+For handling Spark Context parameters, we create a Spark Session and set values for "spark.default.parallelism" 
+parameter, indicating default number of partitions in RDDs used by transformations like 
+join or reduceByKey. We create SparkContextSingleton object specifying master type (mandatory) and 
+number of RDD partitions and get SparkContext inside Main class.
 
-![env_file_example](images/env_prototype.PNG)
+## Instruction for running project on local environment
 
-You can find our implementation in SparkContextSingleton file on src/main/scala/utils.
+You can run Main program by specifying <b>Spark master type</b> (mandatory), <b>algorithmName</b> 
+parameter choosing the ones you can find inside ranking folder (default PageRank), <b>inputFilePath</b>
+you can find inside data folder, <b>outputFilePath</b>, <b>parallelism</b> specifying RDD partition number (default 4),
+<b>mode</b> parameter which stands for execution environment (local, localOnCloud, distributedOnCloud) 
+and finally <b>distributedWorkers</b> useless in local environment (optional).  
 
 # Cloud execution on GCP 
 
@@ -124,7 +124,8 @@ gsutil cp target/scala-2.12/covidpubrank_2.12-0.1.0-SNAPSHOT.jar gs://$BUCKET_NA
 ```
 gcloud dataproc jobs submit spark [--id $JOB_ID] [--async] --cluster=$CLUSTER_NAME --region=$REGION \
 --jar=gs://$BUCKET_NAME/covidpubrank_2.12-0.1.0-SNAPSHOT.jar \
- "$MACHINE_CONFIG" "$PAGERANK_ALG" "gs://$CITATIONS_BUCKET_PATH" "gs://$OUTPUT_BUCKET"
+ "$MACHINE_CONFIG" "$PAGERANK_ALG" "gs://$CITATIONS_BUCKET_PATH" "gs://$OUTPUT_BUCKET" "Number_of_RDD_partition" \
+ "Environment_execution" "distributedWorkers"
 ```
 Use `--async` if you want to send the job and not wait for the result. The meaning of these variables is the following:
 - `$JOB_ID` may be chosen freely, it is just for identification purposes.
@@ -139,7 +140,10 @@ combination with single-node cluster and vice-versa for multi-node cluster). Ava
 "citations_500.txt", "citations_100.txt", "citations_50.txt", "citations_1.txt").
 - `$OUTPUT_BUCKET_PATH` is the path to the sub-folder of the bucket designated for storing the file including statistics 
 of algorithms. Choose different paths for each job or delete before using them again, although you will have an error. 
-
+- `Number_of_RDD_partitions` ("16" for example).
+- `Environment_execution` specifying environment execution name for output file generation ("localOnCloud", "distributedOnCloud").
+- `DistributedWorkers` indicating information about cluster and machine types for plotting statistics purpose
+  (you can just put "0", "two_workers_n1_standard_4", "two_workers_n1_standard_8", "four_workers_n1_standard_4", "five_workers_n1_standard_4")
 ### Delete cluster
 Gcloud offers commands for delete clusters, list jobs in execution and executed and also delete them.
 ```
@@ -162,7 +166,13 @@ better performances.
 
 ### Plot statistics
 
+Weak Scalability statistics from a Cloud execution comparing available PageRank algorithms varying on 
+different dataset. Execution times in seconds in logarithm scale.
+![env_file_example](images/weak_scalability.png)
 
+Strong Scalability statistics from a Cloud execution comparing available distributed PageRank algorithms changing on workers and
+worker machine types. Execution times in seconds.
+![env_file_example](images/strong_scalability.png)
 ---
 ### Colab notebook
 
