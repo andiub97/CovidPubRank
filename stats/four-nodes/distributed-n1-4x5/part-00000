@@ -1,0 +1,2 @@
+(ranking.DistributedPageRank,85.573344941,dataset_1015681.txt,4)
+(ranking.ParallelPageRankLibrary,93.862370301,dataset_1015681.txt,4)
