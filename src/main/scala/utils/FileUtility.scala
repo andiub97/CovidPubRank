@@ -30,7 +30,7 @@ object FileUtility {
     def exportAlgorithmsResultsOnCloud(path: String, exec_times: Map[String, Double], mode: String, dataset: String, workers: String, sparkContext:SparkContext): Unit = {
 
         if((mode == "localOnCloud") || ( mode == "distributedOnCloud")) {
-          sparkContext.parallelize(exec_times.map(t => (t._1, t._2, dataset.substring(23), workers)).toSeq).coalesce(1, true).saveAsTextFile(path)
+          sparkContext.parallelize(exec_times.map(t => (t._1, t._2, dataset.substring(23), workers)).toSeq).coalesce(1, shuffle = true).saveAsTextFile(path)
         }
 
 

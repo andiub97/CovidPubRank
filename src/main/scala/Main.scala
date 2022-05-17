@@ -71,7 +71,7 @@ object Main {
                 case "ParallelPageRankLibrary" => List(new ParallelPageRankLibrary())
                 case "NotDistributedAlgorithms" => List(new PageRank(), new PageRankLibrary())
                 case "DistributedAlgorithms" => List(distributedAlgorithm, new ParallelPageRankLibrary())
-                case "allAlgorithms" => List(distributedAlgorithm, new ParallelPageRankLibrary(), new PageRankLibrary(), new PageRank())
+                case "AllAlgorithms" => List(distributedAlgorithm, new ParallelPageRankLibrary(), new PageRankLibrary(), new PageRank())
             }
 
         // Report algorithm
@@ -93,8 +93,8 @@ object Main {
         ranking.map(r => (println(r._1), println(r._2._2), VisualizationUtils.printTopK(r._2._1, nodes, topK)))
         // Get execution time for each ranking algorithm
         val exec_times = ranking.map(r => (r._1, r._2._2 ))
-        // Export results to txt file
 
+        // Export results to txt file in local and cloud env
         if( mode == "local" ){
             FileUtility.exportAlgorithmsResults(outputFilePath, exec_times, graphFilePath)
         }else {
