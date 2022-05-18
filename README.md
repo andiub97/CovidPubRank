@@ -13,12 +13,11 @@ Different size of datasets and different page rank algorithms were been used to 
 To test strong scalability of the algorithms implemented in our project it was been used Google Cloud Platform (GCP) which allowed us to increase the performances by adding or removing resources from the system.
 
 # Steps
-The implementation of our application is mainly composed by four steps:
+The implementation of our application is mainly composed by three steps:
 
 * Loads a graph's list of edges from a given file path
 * Loads node labels from a given file path
 * Page rank computation
-* Algorithms performance 
 
 ## Loads a list of edges from a given file path
 
@@ -50,11 +49,6 @@ To increase performance the "pageRank" structure has been partitioned, for the p
 For each iteration "outEdges" and "pageRank" are joined together in order to get for each source node its destination ones and the relative rank value. Then is performed a <i>flatMap</i> operation in order to get all destination nodes and assign to them the contribution part computes by this formula <b>(sour. node rank val. / num. dest. nodes)</b>.\
 Once the iteration start finishing the action reduce is performed and the RDD pageRank's value is updated based on page rank formula.\
 The computation of the distributed ranking algorithms is executed through parallelization, spreading the computation of the contributions across the workers.\
-
-## Algorithms performance 
-
-The two classes of algorithms have different time computation performance.
-
 
 ## Spark Session configuration
 
