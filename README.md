@@ -79,9 +79,9 @@ Cloud Platform console. Do so following [this guide](https://cloud.google.com/sd
 Once you have completed all previous steps, you can manage buckets, clusters and jobs using google 
 Cloud SDK for CLIs or open our Colab notebook available on this repo.
 
-### Creating buckets and citations uploading
+### Creating buckets and datasets uploading
 All files for the project (JAR executables and TXT datasets) need to be stored in a Cloud Storage bucket.
-Access to the tar archive containing all citation datasets in the data folder, extract and publish them to the bucket, once it is created.
+Access to the tar archive containing all the different datasets in the data folder, extract and publish them to the bucket, once it is created.
 Import the project in sbt, generate the JAR file of the project and copy it to another bucket. Then 
 remember to create the bucket for Page Rank algorithms output, too.
 ```
@@ -118,7 +118,7 @@ gsutil cp target/scala-2.12/covidpubrank_2.12-0.1.0-SNAPSHOT.jar gs://$BUCKET_NA
 ```
 gcloud dataproc jobs submit spark [--id $JOB_ID] [--async] --cluster=$CLUSTER_NAME --region=$REGION \
 --jar=gs://$BUCKET_NAME/covidpubrank_2.12-0.1.0-SNAPSHOT.jar \
- "$MACHINE_CONFIG" "$PAGERANK_ALG" "gs://$CITATIONS_BUCKET_PATH" "gs://$OUTPUT_BUCKET" "Number_of_RDD_partition" \
+ "$MACHINE_CONFIG" "$PAGERANK_ALG" "gs://$DATASET_BUCKET_PATH" "gs://$OUTPUT_BUCKET" "Number_of_RDD_partition" \
  "Environment_execution" "distributedWorkers"
 ```
 Use `--async` if you want to send the job and not wait for the result. The meaning of these variables is the following:
@@ -130,8 +130,8 @@ in .env file (create and define new machine configuration .env file).
 - `$PAGERANK_ALG` indicates the Page Rank algorithm desired for the execution (choose not distributed algorithms in 
 combination with single-node cluster and vice-versa for multi-node cluster). Available algorithms are "PageRank", 
 "PageRankLibrary", "DistributedPageRank" and "ParallelPageRankLibrary".
-- `$CITATIONS_BUCKET_PATH` identifies the path to the bucket containing the chosen citation dataset (available datasets are
-"citations_500.txt", "citations_100.txt", "citations_50.txt", "citations_1.txt").
+- `$DATASET_BUCKET_PATH` identifies the path to the bucket containing the chosen dataset  (available datasets are
+"dataset_9647.txt", "dataset_14924.txt", "datasets_32685.txt", "dataset_1015681.txt").
 - `$OUTPUT_BUCKET_PATH` is the path to the sub-folder of the bucket designated for storing the file including statistics 
 of algorithms. Choose different paths for each job or delete before using them again, although you will have an error. 
 - `Number_of_RDD_partitions` ("16" for example).
