@@ -9,11 +9,11 @@ The project aims at implementing library PageRank and custom PageRank algorithms
 
 # Introduction
 The purpose of the project was to implement a page rank application of scientific articles concerning Covid-19.  
-Different size of datasets and different page rank algorithms were been used to test the weak scalability and the different performance of the application.\
-To test the strong scalability of the algorithms implemented in our project it was been used Google Cloud Platform (GCP) which allowed us to increase the performances by adding or removing resources from the system.
+Different size of datasets and different page rank algorithms were been used to test weak scalability and the different performance of the application.\
+To test strong scalability of the algorithms implemented in our project it was been used Google Cloud Platform (GCP) which allowed us to increase the performances by adding or removing resources from the system.
 
 # Steps
-The implementation of our application is mainly composed by four main steps:
+The implementation of our application is mainly composed by four steps:
 
 * Loads a graph's list of edges from a given file path
 * Loads node labels from a given file path
@@ -22,23 +22,23 @@ The implementation of our application is mainly composed by four main steps:
 
 ## Loads a list of edges from a given file path
 
-A <b>list of edges</b> is define as a pair RDD (RDD[(Int, Int)] ) each of which is composed by two integers: the first one identifies the current node's id and the second one the outcome node's id.
+A <b>list of edges</b> is define as a pairRDD (RDD[(Int, Int)] ) each of which is composed by two integers: the first one identifies the current node's id and the second one represents the outcome node's id.
 
 ## Loads node labels from a given file path
 
-Each <b>node</b> is define as a pair RDD (RDD[(Int, String)]) each of which is composed by an integer and a string: the first parameter identifies the node's id and the second one represents the name of the scientific article.
+Each <b>node</b> is define as a pairRDD (RDD[(Int, String)]) each of which is composed by an integer and a string: the first parameter identifies the node's id and the second one represents the name of the scientific article.
 
 ## Page rank computation
 
 To execute page rank computation we have used two different classes of algorithms:
 * Sequential algorithms, executed on a single node
-* Distributed algorithms, executed in parallel on differents nodes
+* Distributed algorithms, executed in parallel on different nodes
 
 ### Sequential algorithms
 This class of algorithms computes the contribution for each node in a sequential way (one by one) so if the size of the datasets grows up the computation time increases linearly.
-The RDDs of nodes and edges were been transformed into a <b>List[(Int,Int)]</b> or a <b>Graph[(Int,String),String]</b> before the start of the algorithms computations.\
+The RDDs of nodes and edges were been transformed into a <b>List[(Int,Int)]</b> or a <b>Graph[(Int,String),String]</b> before the start of the algorithms' computation.\
 It was been used two different algorithms: an our custom PageRank and a library PageRank algorithm.\
-The first one computes the ranking in a normalize way and after ten iterations returns the rank list as result. The second one computes the ranking by using a Graph stucture and returns a not normalize rank list.
+The first one computes the ranking in a normalize way and after ten iterations returns the rank list as result. The second one computes the ranking by using a Graph stucture and returns a not normalize rank list as result.
 
 
 ###  Distributed algorithms
