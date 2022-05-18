@@ -131,7 +131,7 @@ in .env file (create and define new machine configuration .env file).
 combination with single-node cluster and vice-versa for multi-node cluster). Available algorithms are "PageRank", 
 "PageRankLibrary", "DistributedPageRank" and "ParallelPageRankLibrary".
 - `$DATASET_BUCKET_PATH` identifies the path to the bucket containing the chosen dataset  (available datasets are
-"dataset_9647.txt", "dataset_14924.txt", "datasets_32685.txt", "dataset_1015681.txt").
+"dataset_9647.txt", "dataset_14924.txt", "dataset_32685.txt", "dataset_1015681.txt").
 - `$OUTPUT_BUCKET_PATH` is the path to the sub-folder of the bucket designated for storing the file including statistics 
 of algorithms. Choose different paths for each job or delete before using them again, although you will have an error. 
 - `Number_of_RDD_partitions` ("16" for example).
