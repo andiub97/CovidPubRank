@@ -138,6 +138,7 @@ of algorithms. Choose different paths for each job or delete before using them a
 - `Environment_execution` specifying environment execution name for output file generation ("localOnCloud", "distributedOnCloud").
 - `DistributedWorkers` indicating information about cluster and machine types for plotting statistics purpose
   (you can just put "0", "two_workers_n1_standard_4", "two_workers_n1_standard_8", "four_workers_n1_standard_4", "five_workers_n1_standard_4")
+
 ### Delete cluster
 Gcloud offers commands for delete clusters, list jobs in execution and executed and also delete them.
 ```
@@ -146,6 +147,13 @@ Gcloud offers commands for delete clusters, list jobs in execution and executed 
 ```
 Again, you can use environment variables or substitute them with values. The meaning of these variables is the following:
 - `$CLUSTER_NAME` and `$REGION` are those defined in the above sections.
+
+### Delete jobs
+You can delete all terminated jobs by using the following command:
+```
+!gcloud dataproc jobs delete $JOB_ID
+```
+- `JOB_ID` of the job you want delete
 
 ### Strong and weak scalability
 
