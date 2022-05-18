@@ -35,8 +35,8 @@ To execute page rank computation we have used two different classes of algorithm
 
 ### Sequential algorithms
 This class of algorithms computes the contribution for each node in a sequential way (one by one) so if the size of the datasets grows up the computation time increases linearly.
-The RDDs of nodes and edges were been transformed into a <b>List[(Int,Int)]</b> or a <b>Graph[(Int,String),String]</b> before the start of the algorithms' computation.\
-It was been used two different algorithms: an our custom PageRank and a library PageRank algorithm.\
+The RDDs of nodes and edges were been transformed into a <b>List[(Int,Int)]</b> or a <b>Graph[(Int,String),String]</b>, depending on the type of the algorithm, before the start of the computation.\
+It was been used two different sequential algorithms: an our custom PageRank and a library PageRank.\
 The first one computes the ranking in a normalize way and after ten iterations returns the rank list as result. The second one computes the ranking by using a Graph stucture and returns a not normalize rank list as result.
 
 
@@ -44,8 +44,8 @@ The first one computes the ranking in a normalize way and after ten iterations r
 
 In this class of algorithms has been used the resilient distributed dataset (RDD), which is a collection of elements partitioned across the nodes of the cluster that can be operated on in parallel.\
 Our distributed algorithm starts with the creation of "outEdges", namely the out edges' data structure computes by grouping source common nodes to their outgoing ones. This structure has type <b>RDD[(Int, Iterable[Int])]</b>.\
-It has been defined a second data structure: <i>pageRank</i>, which has  type <b>RDD[(Int, Float)]</b> and contains the initial contributions for each node (1 / NumOfNodes).\
-To increase performance the "pageRank" structure has been partitioned, for the parallel computation, with an HashPartitioner which takes a single argument: "<i>numPartitions</i>" to define the number of partitions.\
+It has been defined a second data structure: <i>pageRank</i>, which has type <b>RDD[(Int, Float)]</b> and contains the initial contributions for each node (1 / NumOfNodes).\
+To increase performance the "pageRank" structure has been partitioned, for the parallel computation, with an RangePartitioner which takes a single argument: "<i>numPartitions</i>" to define the number of partitions.\
 For each iteration "outEdges" and "pageRank" are joined together in order to get for each source node its destination ones and the relative rank value. Then is performed a <i>flatMap</i> operation in order to get all destination nodes and assign to them the contribution part computes by this formula <b>(sour. node rank val. / num. dest. nodes)</b>.\
 Once the iteration start finishing the action reduce is performed and the RDD pageRank's value is updated based on page rank formula.\
 The computation of the distributed ranking algorithms is executed through parallelization, spreading the computation of the contributions across the workers.\
@@ -151,10 +151,10 @@ Again, you can use environment variables or substitute them with values. The mea
 
 It is possible submit different jobs on more than one cluster to obtain the execution times of our Page Rank algorithms 
 and compare them to see the project scalability. In particular:
-- Strong Scalability shows Spark scalability of multiple Dataproc cluster, varying in number of worker nodes, 
-for a dated dataset. We suggest testing single-worker, two-worker and three-worker cluster by submitting jobs choosing 
+- <b>Strong Scalability</b> shows Spark scalability of multiple Dataproc cluster, varying in number of worker nodes, 
+for a dated dataset. We suggest testing single-worker, two-worker and four-worker cluster by submitting jobs choosing 
 larger datasets to see performances.
-- Weak Scalability focuses on scalability of a certain cluster provided with a stated number of workers, varying in the size of 
+- <b>Weak Scalability</b> focuses on scalability of a certain cluster provided with a stated number of workers, varying in the size of 
 different datasets. In case of larger datasets, we suggest using no-single-worker clusters and distributed algorithms for 
 better performances.
 
