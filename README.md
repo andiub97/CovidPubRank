@@ -35,8 +35,8 @@ To execute page rank computation we have used two different classes of algorithm
 
 ### Sequential algorithms
 This class of algorithms computes the contribution for each node in a sequential way (one by one) so if the size of the datasets grows up the computation time increases linearly.
-The RDDs of nodes and edges were been transformed into a <b>List[(Int,Int)]</b> or a <b>Graph[(Int,String),String]</b> before the start of the algorithms' computation.\
-It was been used two different algorithms: an our custom PageRank and a library PageRank algorithm.\
+The RDDs of nodes and edges were been transformed into a <b>List[(Int,Int)]</b> or a <b>Graph[(Int,String),String]</b>, depending on the type of the algorithm, before the start of the computation.\
+It was been used two different sequential algorithms: an our custom PageRank and a library PageRank.\
 The first one computes the ranking in a normalize way and after ten iterations returns the rank list as result. The second one computes the ranking by using a Graph stucture and returns a not normalize rank list as result.
 
 
@@ -44,8 +44,8 @@ The first one computes the ranking in a normalize way and after ten iterations r
 
 In this class of algorithms has been used the resilient distributed dataset (RDD), which is a collection of elements partitioned across the nodes of the cluster that can be operated on in parallel.\
 Our distributed algorithm starts with the creation of "outEdges", namely the out edges' data structure computes by grouping source common nodes to their outgoing ones. This structure has type <b>RDD[(Int, Iterable[Int])]</b>.\
-It has been defined a second data structure: <i>pageRank</i>, which has  type <b>RDD[(Int, Float)]</b> and contains the initial contributions for each node (1 / NumOfNodes).\
-To increase performance the "pageRank" structure has been partitioned, for the parallel computation, with an HashPartitioner which takes a single argument: "<i>numPartitions</i>" to define the number of partitions.\
+It has been defined a second data structure: <i>pageRank</i>, which has type <b>RDD[(Int, Float)]</b> and contains the initial contributions for each node (1 / NumOfNodes).\
+To increase performance the "pageRank" structure has been partitioned, for the parallel computation, with an RangePartitioner which takes a single argument: "<i>numPartitions</i>" to define the number of partitions.\
 For each iteration "outEdges" and "pageRank" are joined together in order to get for each source node its destination ones and the relative rank value. Then is performed a <i>flatMap</i> operation in order to get all destination nodes and assign to them the contribution part computes by this formula <b>(sour. node rank val. / num. dest. nodes)</b>.\
 Once the iteration start finishing the action reduce is performed and the RDD pageRank's value is updated based on page rank formula.\
 The computation of the distributed ranking algorithms is executed through parallelization, spreading the computation of the contributions across the workers.\
@@ -79,9 +79,9 @@ Cloud Platform console. Do so following [this guide](https://cloud.google.com/sd
 Once you have completed all previous steps, you can manage buckets, clusters and jobs using google 
 Cloud SDK for CLIs or open our Colab notebook available on this repo.
 
-### Creating buckets and citations uploading
+### Creating buckets and datasets uploading
 All files for the project (JAR executables and TXT datasets) need to be stored in a Cloud Storage bucket.
-Access to the tar archive containing all citation datasets in the data folder, extract and publish them to the bucket, once it is created.
+Access to the tar archive containing all the different datasets in the data folder, extract and publish them to the bucket, once it is created.
 Import the project in sbt, generate the JAR file of the project and copy it to another bucket. Then 
 remember to create the bucket for Page Rank algorithms output, too.
 ```
@@ -118,7 +118,7 @@ gsutil cp target/scala-2.12/covidpubrank_2.12-0.1.0-SNAPSHOT.jar gs://$BUCKET_NA
 ```
 gcloud dataproc jobs submit spark [--id $JOB_ID] [--async] --cluster=$CLUSTER_NAME --region=$REGION \
 --jar=gs://$BUCKET_NAME/covidpubrank_2.12-0.1.0-SNAPSHOT.jar \
- "$MACHINE_CONFIG" "$PAGERANK_ALG" "gs://$CITATIONS_BUCKET_PATH" "gs://$OUTPUT_BUCKET" "Number_of_RDD_partition" \
+ "$MACHINE_CONFIG" "$PAGERANK_ALG" "gs://$DATASET_BUCKET_PATH" "gs://$OUTPUT_BUCKET" "Number_of_RDD_partition" \
  "Environment_execution" "distributedWorkers"
 ```
 Use `--async` if you want to send the job and not wait for the result. The meaning of these variables is the following:
@@ -130,8 +130,8 @@ in .env file (create and define new machine configuration .env file).
 - `$PAGERANK_ALG` indicates the Page Rank algorithm desired for the execution (choose not distributed algorithms in 
 combination with single-node cluster and vice-versa for multi-node cluster). Available algorithms are "PageRank", 
 "PageRankLibrary", "DistributedPageRank" and "ParallelPageRankLibrary".
-- `$CITATIONS_BUCKET_PATH` identifies the path to the bucket containing the chosen citation dataset (available datasets are
-"citations_500.txt", "citations_100.txt", "citations_50.txt", "citations_1.txt").
+- `$DATASET_BUCKET_PATH` identifies the path to the bucket containing the chosen dataset  (available datasets are
+"dataset_9647.txt", "dataset_14924.txt", "datasets_32685.txt", "dataset_1015681.txt").
 - `$OUTPUT_BUCKET_PATH` is the path to the sub-folder of the bucket designated for storing the file including statistics 
 of algorithms. Choose different paths for each job or delete before using them again, although you will have an error. 
 - `Number_of_RDD_partitions` ("16" for example).
@@ -159,10 +159,10 @@ You can delete all terminated jobs by using the following command:
 
 It is possible submit different jobs on more than one cluster to obtain the execution times of our Page Rank algorithms 
 and compare them to see the project scalability. In particular:
-- Strong Scalability shows Spark scalability of multiple Dataproc cluster, varying in number of worker nodes, 
-for a dated dataset. We suggest testing single-worker, two-worker and three-worker cluster by submitting jobs choosing 
+- <b>Strong Scalability</b> shows Spark scalability of multiple Dataproc cluster, varying in number of worker nodes, 
+for a dated dataset. We suggest testing single-worker, two-worker and four-worker cluster by submitting jobs choosing 
 larger datasets to see performances.
-- Weak Scalability focuses on scalability of a certain cluster provided with a stated number of workers, varying in the size of 
+- <b>Weak Scalability</b> focuses on scalability of a certain cluster provided with a stated number of workers, varying in the size of 
 different datasets. In case of larger datasets, we suggest using no-single-worker clusters and distributed algorithms for 
 better performances.
 
