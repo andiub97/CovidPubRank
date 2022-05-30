@@ -27,7 +27,7 @@ class PageRank() extends AlgorithmInterface {
       val maxIter: Int = 10
       val damping: Float = 0.85f
 
-      // Runs PageRank until convergence.
+      // Runs PageRank for a fixed number of iterations.
 
       for (_ <- 1 to maxIter) {
         pr = pr.map { case (nodeId: Int, _: Float) =>
