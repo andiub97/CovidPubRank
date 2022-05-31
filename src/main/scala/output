@@ -1,4 +1,4 @@
-ranking.DistributedPageRank,1.851970916,data/dataset_1760.txt
-ranking.ParallelPageRankLibrary,1.397479209,data/dataset_1760.txt
-ranking.PageRankLibrary,0.351465291,data/dataset_1760.txt
-ranking.PageRank,0.284668792,data/dataset_1760.txt
+ranking.DistributedPageRank,1.265369667,data/dataset_1760.txt
+ranking.ParallelPageRankLibrary,0.77749425,data/dataset_1760.txt
+ranking.PageRankLibrary,0.1924655,data/dataset_1760.txt
+ranking.PageRank,0.252039625,data/dataset_1760.txt
