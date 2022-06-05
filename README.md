@@ -173,6 +173,9 @@ different dataset. Execution times in seconds in logarithm scale.
 
 ![env_file_example](images/weak_scalability.png)
 
+As you can see, statistics of PageRank algorithm for the largest dataset is omitted, since it's
+too big in comparison to the results of the same algorithm for the other datasets.
+
 Strong Scalability statistics from a Cloud execution comparing available distributed PageRank algorithms changing on workers and
 worker machine types. Execution times in seconds.
 

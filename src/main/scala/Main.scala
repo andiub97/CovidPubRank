@@ -20,7 +20,6 @@ object Main {
 
             case r : PageRank =>
 
-
                 val start_time = System.nanoTime
                 val ranking = r.rank(edgesList: RDD[(Int,Int)],N,sparkContext)
                 val duration = (System.nanoTime - start_time) / 1e9d
