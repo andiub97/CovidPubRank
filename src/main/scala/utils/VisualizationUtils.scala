@@ -12,14 +12,13 @@ object VisualizationUtils {
      * @param nodes  : articles labels and titles.
      * @param topK          : number of articles to print.
      * */
-    def printTopK(rank: RDD[(Int, Float)], nodes: RDD[(Int, String)], topK: Int): Unit = {
+    def printTopK(rank: Array[(Int, Float)], nodes: RDD[(Int, String)], topK: Int): Unit = {
         val topKNodes = nodes.collect.toMap
-        val topKRank = rank.collect.toList
 
 
         for (i <- 0 until topK) {
 
-            println(topKNodes(i), topKRank(i)._2)
+            println(topKNodes(i), rank(i)._2)
         }
     }
 

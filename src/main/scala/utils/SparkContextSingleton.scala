@@ -6,7 +6,9 @@ object SparkContextSingleton {
     var DEFAULT_PARALLELISM = 4 // number of partitions
 
     private def _sparkSession(master: String): SparkSession = {
-        var builder = SparkSession.builder.appName("CovidPubRank")
+        var builder = SparkSession
+          .builder
+          .appName("CovidPubRank")
 
         if (master != "default") {
             builder = builder.master(master)

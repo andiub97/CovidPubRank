@@ -2,13 +2,13 @@ package ranking
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import ranking.algorithmTraits.AlgorithmInterface
+import ranking.algorithmTraits.{AlgorithmInterface, NotLibraryAlgorithms}
 
 import scala.collection.immutable.Map
 
-class PageRank() extends AlgorithmInterface {
+class PageRank() extends AlgorithmInterface with NotLibraryAlgorithms {
 
-  type T = List[(Int, Int)]
+  override type T = RDD[(Int, Int)]
     /**
      * Performs ranking of a graph's nodes by using PageRank algorithm
      *
@@ -21,7 +21,8 @@ class PageRank() extends AlgorithmInterface {
       NOTE: There will never be a node with zero outgoing nodes, during calculation of PageRank.
             This is because when we consider an incoming node B for a node A, B must have at least the link to A.
        */
-      val outgoingCnt: Map[Int, Int] = edgesList.map(edge => (edge._1, 1)).groupBy(_._1).mapValues(_.map(_._2).sum)
+      val edge = edgesList.collect().toList
+      val outgoingCnt: Map[Int, Int] = edge.map(edge => (edge._1, 1)).groupBy(_._1).mapValues(_.map(_._2).sum)
       var pr: Map[Int, Float] = (0 until N).map(nodeIndex => (nodeIndex, 0.15f / N)).toMap
 
       val maxIter: Int = 10
@@ -32,7 +33,7 @@ class PageRank() extends AlgorithmInterface {
       for (_ <- 1 to maxIter) {
         pr = pr.map { case (nodeId: Int, _: Float) =>
           (nodeId, (1 - damping) / N + damping *
-            edgesList.filter { case (_: Int, dest: Int) => dest == nodeId }
+            edge.filter { case (_: Int, dest: Int) => dest == nodeId }
               .map { case (incoming: Int, _: Int) => pr(incoming) / outgoingCnt(incoming) }.sum
           )
         }

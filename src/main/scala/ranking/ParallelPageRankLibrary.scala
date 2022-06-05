@@ -32,8 +32,11 @@ class ParallelPageRankLibrary extends AlgorithmInterface with LibraryAlgorithms 
 
     def sendMessage(edge: EdgeTriplet[Double, Double]): Iterator[(VertexId, Double)] =
       Iterator((edge.dstId, edge.srcAttr * edge.attr))
+
     def messageCombiner(a: Double, b: Double): Double = a + b
+
     val initialMessage = 0.0
+
     // Execute Pregel for a fixed number of iterations.
     val pr = Pregel(pagerankGraph, initialMessage, 10)(
       vertexProgram, sendMessage, messageCombiner)

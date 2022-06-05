@@ -8,26 +8,23 @@ import utils.{FileUtility, SparkContextSingleton, VisualizationUtils}
 object Main {
 
 
-    def performRanking(sparkContext : SparkContext, edgesList: RDD[(Int, Int)],nodes: RDD[(Int, String)],N: Int, algorithm: AlgorithmInterface): (String, (RDD[(Int, Float)], Double)) = {
+    def performRanking(sparkContext : SparkContext, edgesList: RDD[(Int, Int)],nodes: RDD[(Int, String)],N: Int, algorithm: AlgorithmInterface, topK:Int): (Array[(Int, Float)], Double) = {
         algorithm match {
 
             case r @ (_: DistributedPageRank | _: DistributedPageRankOptimized ) =>
 
                 val start_time = System.nanoTime
-                //val distEdgesList = sc.parallelize(edgesList)
-                var ranking: RDD[(Int,Float)] = null
-                ranking = r.asInstanceOf[NotLibraryAlgorithms].rank(edgesList: RDD[(Int,Int)],N,sparkContext)
-
+                val ranking = r.asInstanceOf[NotLibraryAlgorithms].rank(edgesList: RDD[(Int,Int)],N,sparkContext)
                 val duration = (System.nanoTime - start_time) / 1e9d
-                "ranking.DistributedPageRank" -> (ranking, duration)
+                (ranking.take(topK), duration)
 
             case r : PageRank =>
 
-                val list = edgesList.collect().toList
+
                 val start_time = System.nanoTime
-                val ranking = r.rank(list: List[(Int,Int)],N,sparkContext)
+                val ranking = r.rank(edgesList: RDD[(Int,Int)],N,sparkContext)
                 val duration = (System.nanoTime - start_time) / 1e9d
-                r.getClass.getName -> (ranking, duration)
+                (ranking.take(topK), duration)
 
             case r @ (_ : PageRankLibrary | _: ParallelPageRankLibrary ) =>
                 // get nodes from file
@@ -39,7 +36,7 @@ object Main {
                 val start_time = System.nanoTime
                 val ranking = r.asInstanceOf[LibraryAlgorithms].rank(graph, N, sparkContext)
                 val duration = (System.nanoTime - start_time) / 1e9d
-                r.getClass.getName -> (ranking, duration)
+                (ranking.take(topK), duration)
 
         }
     }
@@ -48,7 +45,7 @@ object Main {
 
         // Parse program arguments
         val master = args(0)
-        val algorithmName = if (args.length > 1) args(1) else "PageRank"
+        val algorithmName = if (args.length > 1) args(1) else "DistributedPageRank"
         val graphFilePath = if (args.length > 2) args(2) else "data/dataset_1015681.txt"
         val outputFilePath = if (args.length > 3) args(3) else "src/main/scala/output"
         val parallelism =  if (args.length > 4) args(4) else "4"
@@ -85,12 +82,11 @@ object Main {
         println("Loaded " + N + " nodes.")
         println("Loaded " + edgesList.count() + " edges.")
         // Perform ranking
-        var ranking: Map[String, (RDD[(Int, Float)], Double)] = null
 
-        ranking = r.map(algorithm => performRanking(sparkContext, edgesList,nodes, N, algorithm)).toMap
+        val ranking = r.map(algorithm => (algorithm.toString, performRanking(sparkContext, edgesList,nodes, N, algorithm, topK))).toMap
 
         // Print all the results
-        ranking.map(r => (println(r._1), println(r._2._2), VisualizationUtils.printTopK(r._2._1, nodes, topK)))
+        ranking.map(r => (println(r._1),println(r._2._2), VisualizationUtils.printTopK(r._2._1, nodes, topK)))
         // Get execution time for each ranking algorithm
         val exec_times = ranking.map(r => (r._1, r._2._2 ))
 

@@ -1,8 +1,7 @@
 package ranking
 
-import org.apache.spark.{HashPartitioner, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.StorageLevel
 import ranking.algorithmTraits.{AlgorithmInterface, NotLibraryAlgorithms}
 import utils.SparkContextSingleton
 

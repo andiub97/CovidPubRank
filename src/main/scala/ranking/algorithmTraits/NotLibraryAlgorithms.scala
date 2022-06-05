@@ -5,6 +5,12 @@ import org.apache.spark.rdd.RDD
 
 trait NotLibraryAlgorithms extends AlgorithmInterface {
 
-  type T = RDD[(Int, Int)]
+  override type T = RDD[(Int, Int)]
   def rank(edgesList: T, N: Int, sparkContext: SparkContext): RDD[(Int, Float)]
+  override def toString: String =
+    if(this.getClass.getName == "ranking.DistributedPageRankOptimized")
+      "ranking.DistributedPageRank"
+    else
+      this.getClass.getName
+
 }
