@@ -10,7 +10,7 @@ The project aims at implementing library PageRank and custom PageRank algorithms
 # Introduction
 The purpose of the project was to implement a page rank application of scientific articles concerning Covid-19.  
 Different size of datasets and clusters were being used to test weak scalability of distributed Page Rank algorithms.\
-Also for testing strong scalability we used to scaling in cluster size comparing distributed algorithms on a large dataset.\   
+Also for testing strong scalability we used to scaling in cluster size comparing distributed algorithms on a large dataset.  
 We used Google Cloud Platform (GCP) which allowed us to increase the performances by adding or removing resources from the system.
 
 # Steps
@@ -49,7 +49,7 @@ It has been defined a second data structure: <i>pageRank</i>, which has type <b>
 To increase performance the "pageRank" structure has been partitioned, for the parallel computation, with an RangePartitioner which takes a single argument: "<i>numPartitions</i>" to define the number of partitions.\
 For each iteration "outEdges" and "pageRank" are joined together in order to get for each source node its destination ones and the relative rank value. Then is performed a <i>flatMap</i> operation in order to get all destination nodes and assign to them the contribution part computes by this formula <b>(sour. node rank val. / num. dest. nodes)</b>.\
 Once the iteration start finishing the action reduce is performed and the RDD pageRank's value is updated based on page rank formula.\
-The computation of the distributed ranking algorithms is executed through parallelization, spreading the computation of the contributions across the workers.\
+The computation of the distributed ranking algorithms is executed through parallelization, spreading the computation of the contributions across the workers.
 
 ## Spark Session configuration
 
@@ -78,7 +78,7 @@ Moreover, it is necessary enable billing for the project.
 We suggest installing the Google Cloud SDK for CLIs in your system for using GCP, instead using Google
 Cloud Platform console. Do so following [this guide](https://cloud.google.com/sdk/docs/install).
 Once you have completed all previous steps, you can manage buckets, clusters and jobs using google 
-Cloud SDK for CLIs or open our Colab notebook available on this repo.
+Cloud SDK for CLIs or open our Colab notebook available on this repository.
 
 ### Creating buckets and datasets uploading
 All files for the project (JAR executables and TXT datasets) need to be stored in a Cloud Storage bucket.
@@ -201,7 +201,7 @@ Prerequisites for using the notebook:
 - Allow Colab to access Google Drive service (just for using environment variables, it's optional)
 
 Once created a project on GCP, enabled Google services cited in above section and billing option for the project,
-it is possible open Colab notebook available in this repo using your logged-in Google account and perform almost steps
+it is possible open Colab notebook available in this repository using your logged-in Google account and perform almost steps
 described in the "Cloud execution on GCP" section. You can choose if upload a file on Drive describing
 the environment variables that will be used on the notebook (obviously modify them or add new ones), or just replace variables with correct values.
 In this Colab notebook it is possible create buckets and upload jar file and datasets of the project into them,
