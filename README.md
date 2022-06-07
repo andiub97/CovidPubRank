@@ -9,8 +9,9 @@ The project aims at implementing library PageRank and custom PageRank algorithms
 
 # Introduction
 The purpose of the project was to implement a page rank application of scientific articles concerning Covid-19.  
-Different size of datasets and different page rank algorithms were been used to test weak scalability and the different performance of the application.\
-To test strong scalability of the algorithms implemented in our project it was been used Google Cloud Platform (GCP) which allowed us to increase the performances by adding or removing resources from the system.
+Different size of datasets and clusters were being used to test weak scalability of distributed Page Rank algorithms.\
+Also for testing strong scalability we used to scaling in cluster size comparing distributed algorithms on a large dataset.\   
+We used Google Cloud Platform (GCP) which allowed us to increase the performances by adding or removing resources from the system.
 
 # Steps
 The implementation of our application is mainly composed by three steps:
@@ -155,31 +156,43 @@ You can delete all terminated jobs by using the following command:
 ```
 - `JOB_ID` of the job you want delete
 
-### Strong and weak scalability
+## Strong and weak scalability
 
 It is possible submit different jobs on more than one cluster to obtain the execution times of our Page Rank algorithms 
 and compare them to see the project scalability. In particular:
 - <b>Strong Scalability</b> shows Spark scalability of multiple Dataproc cluster, varying in number of worker nodes, 
 for a dated dataset. We suggest testing single-worker, two-worker and four-worker cluster by submitting jobs choosing 
 larger datasets to see performances.
-- <b>Weak Scalability</b> focuses on scalability of a certain cluster provided with a stated number of workers, varying in the size of 
-different datasets. In case of larger datasets, we suggest using no-single-worker clusters and distributed algorithms for 
+- <b>Weak Scalability</b> focuses on scalability on cluster by increasing the number of workers and, at the same time,
+scaling on the size of datasets. In case of larger datasets, we suggest using no-single-worker clusters and distributed algorithms for 
 better performances.
 
-### Plot statistics
+## Plot statistics
+
+### Weak Scalability
 
 Weak Scalability statistics from a Cloud execution comparing available PageRank algorithms varying on 
 different dataset. Execution times in seconds in logarithm scale.
 
 ![env_file_example](images/weak_scalability.png)
 
-As you can see, statistics of PageRank algorithm for the largest dataset is omitted, since it's
-too big in comparison to the results of the same algorithm for the other datasets.
+As you can see, statistics of sequential algorithms are omitted, since they are not so interesting
+in comparison to the results of the distributed algorithms. Execution times in seconds.
 
-Strong Scalability statistics from a Cloud execution comparing available distributed PageRank algorithms changing on workers and
-worker machine types. Execution times in seconds.
+### Strong Scalability
+Strong Scalability statistics from a Cloud execution comparing available distributed PageRank algorithms changing on workers. 
+Execution times in seconds.
 
 ![env_file_example](images/strong_scalability.png)
+
+### Vertical Scalability
+
+Vertical scalability means scaling on the number of vCPUs and memory for clusters of the same 
+amount of worker. In this case we compare the distributed algorithms on two-worker cluster
+with, respectively, 4 vCPUs and 8 vCPUs for worker.
+
+![env_file_example](images/vertical_scalability.png)
+
 ---
 ### Colab notebook
 
