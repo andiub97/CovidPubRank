@@ -15,8 +15,7 @@ class PageRankLibrary extends AlgorithmInterface with LibraryAlgorithms {
    * */
    override def rank(graph: T, N: Int, sparkContext: SparkContext): RDD[(Int, Float)] ={
 
-     val pagerank = graph.pageRank(0.000000001f, 0.15)
-     val pr= pagerank.vertices.map(v => (v._1.toInt, v._2.toFloat))
+     val pr = graph.staticPageRank( 10).vertices.map(v => (v._1.toInt, v._2.toFloat))
      pr.sortBy(- _._2)
    }
 }

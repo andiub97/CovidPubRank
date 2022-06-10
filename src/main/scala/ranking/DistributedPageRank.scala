@@ -1,8 +1,8 @@
 package ranking
 
-import org.apache.spark.{HashPartitioner, RangePartitioner, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
+import org.apache.spark.{RangePartitioner, SparkContext}
 import ranking.algorithmTraits.{AlgorithmInterface, NotLibraryAlgorithms}
 import utils.SparkContextSingleton
 
@@ -22,9 +22,9 @@ class DistributedPageRank() extends AlgorithmInterface with NotLibraryAlgorithms
         val mockEdges = sparkContext.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)))
         val mockOutEdges = mockEdges.groupByKey(SparkContextSingleton.DEFAULT_PARALLELISM)
         val outEdges = outEdgesTmp.union(mockOutEdges).persist((StorageLevel.MEMORY_AND_DISK))
-        var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new RangePartitioner(SparkContextSingleton.DEFAULT_PARALLELISM, outEdges)).persist(StorageLevel.MEMORY_AND_DISK)
+        var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N).partitionBy(new RangePartitioner(SparkContextSingleton.DEFAULT_PARALLELISM, outEdges))
 
-        // Runs PageRank until convergence.
+        // Runs DistributedPageRank for a fixed number of iteration.
 
         for (_ <- 1 to 10) {
             val nodeSuccessorsScores = outEdges.join(pageRank)
@@ -41,5 +41,6 @@ class DistributedPageRank() extends AlgorithmInterface with NotLibraryAlgorithms
 
         pageRank.sortBy(- _._2)
     }
+
 
 }

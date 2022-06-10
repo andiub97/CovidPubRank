@@ -21,7 +21,7 @@ class DistributedPageRankOptimized() extends AlgorithmInterface with NotLibraryA
 
     var pageRank: RDD[(Int, Float)] = outEdges.mapValues(_ => 1f / N)
 
-    // Runs PageRank for a fixed number of iteration.
+    // Runs DistributedPageRank for a fixed number of iteration.
 
     for (_ <- 1 to 10) {
       val nodeSuccessorsScores = outEdges.join(pageRank)
